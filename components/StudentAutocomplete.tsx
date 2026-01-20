@@ -37,7 +37,21 @@ export function StudentAutocomplete({
       return;
     }
 
-    const normalizedValue = value.toLowerCase();
+    const normalizedValue = value.toLowerCase().trim();
+    
+    // Check if value exactly matches a student name (case-insensitive)
+    const exactMatch = students.find(
+      (student) => student.name.toLowerCase().trim() === normalizedValue
+    );
+    
+    // If exact match exists, don't show suggestions
+    if (exactMatch) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    // Otherwise, show filtered suggestions
     const filtered = students.filter((student) =>
       student.name.toLowerCase().includes(normalizedValue)
     );
