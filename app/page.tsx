@@ -53,7 +53,7 @@ export default function Home() {
   return (
     <main className="container mx-auto p-4 md:p-10 space-y-6">
       <div className="flex items-center justify-between">
-        <Card>
+        <Card className="mb-4 mt-4 mr-4">
           <CardHeader>
             <CardTitle className="text-2xl">Tutor Income Calculator</CardTitle>
           </CardHeader>
