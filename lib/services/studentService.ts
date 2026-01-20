@@ -1,18 +1,26 @@
 import { Student } from "@/lib/types/student";
 import { storageService } from "./storageService";
+import { apiService } from "./apiService";
+
+const USE_API = process.env.NEXT_PUBLIC_USE_API === "true";
 
 /**
  * Student service for CRUD operations
  * Abstracts storage implementation to allow easy swap between localStorage and API
  */
 class StudentService {
-  private storage = storageService;
+  private get storage() {
+    return USE_API ? apiService : storageService;
+  }
 
   /**
    * Get all students
    * @returns Promise resolving to array of all students
    */
   async getAllStudents(): Promise<Student[]> {
+    if (USE_API) {
+      return this.storage.fetchStudents();
+    }
     return this.storage.loadStudents();
   }
 
@@ -67,6 +75,10 @@ class StudentService {
   async addStudent(
     studentData: Omit<Student, "id" | "createdAt" | "updatedAt">
   ): Promise<Student> {
+    if (USE_API) {
+      return this.storage.createStudent(studentData);
+    }
+
     const students = await this.getAllStudents();
     
     // Check if student with same name already exists
@@ -100,6 +112,10 @@ class StudentService {
     id: number,
     updates: Partial<Omit<Student, "id" | "createdAt">>
   ): Promise<Student> {
+    if (USE_API) {
+      return this.storage.updateStudent(id, updates);
+    }
+
     const students = await this.getAllStudents();
     const index = students.findIndex((student) => student.id === id);
 
@@ -131,6 +147,10 @@ class StudentService {
    * @throws Error if student not found
    */
   async deleteStudent(id: number): Promise<void> {
+    if (USE_API) {
+      return this.storage.deleteStudent(id);
+    }
+
     const students = await this.getAllStudents();
     const filtered = students.filter((student) => student.id !== id);
 

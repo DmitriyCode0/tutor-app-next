@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { LessonForm } from "@/components/LessonForm";
 import { LessonList } from "@/components/LessonList";
 import { IncomeSummary } from "@/components/IncomeSummary";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { AuthButton } from "@/components/AuthButton";
 import { useLessons } from "@/lib/hooks/useLessons";
 import { Lesson } from "@/lib/types/lesson";
 
@@ -61,9 +63,13 @@ export default function Home() {
             </p>
           </CardContent>
         </Card>
-        <Link href="/students">
-          <Button variant="outline">Manage Students</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {process.env.NEXT_PUBLIC_USE_API === "true" && <AuthButton />}
+          <Link href="/students">
+            <Button variant="outline">Manage Students</Button>
+          </Link>
+        </div>
       </div>
 
       {error && (

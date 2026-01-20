@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StudentForm } from "@/components/StudentForm";
 import { StudentList } from "@/components/StudentList";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { AuthButton } from "@/components/AuthButton";
 import { useStudents } from "@/lib/hooks/useStudents";
 import { Student } from "@/lib/types/student";
 
@@ -52,9 +54,9 @@ export default function StudentsPage() {
   return (
     <main className="container mx-auto p-4 md:p-10 space-y-6">
       <div className="flex items-center justify-between">
-        <Card>
+        <Card className="mb-4 mt-4 mr-4">
           <CardHeader>
-            <CardTitle className="text-2xl">Student Management</CardTitle>
+            <CardTitle className="text-2xl mb-4 mt-4 mr-4">Student Management</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
@@ -62,9 +64,13 @@ export default function StudentsPage() {
             </p>
           </CardContent>
         </Card>
-        <Link href="/">
-          <Button variant="outline">Back to Dashboard</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {process.env.NEXT_PUBLIC_USE_API === "true" && <AuthButton />}
+          <Link href="/">
+            <Button variant="outline">Back to Dashboard</Button>
+          </Link>
+        </div>
       </div>
 
       {error && (

@@ -1,18 +1,26 @@
 import { Lesson } from "@/lib/types/lesson";
 import { storageService } from "./storageService";
+import { apiService } from "./apiService";
+
+const USE_API = process.env.NEXT_PUBLIC_USE_API === "true";
 
 /**
  * Lesson service for CRUD operations
  * Abstracts storage implementation to allow easy swap between localStorage and API
  */
 class LessonService {
-  private storage = storageService;
+  private get storage() {
+    return USE_API ? apiService : storageService;
+  }
 
   /**
    * Get all lessons
    * @returns Promise resolving to array of all lessons
    */
   async getAllLessons(): Promise<Lesson[]> {
+    if (USE_API) {
+      return this.storage.fetchLessons();
+    }
     return this.storage.loadLessons();
   }
 
@@ -24,6 +32,10 @@ class LessonService {
   async addLesson(
     lessonData: Omit<Lesson, "id" | "createdAt">
   ): Promise<Lesson> {
+    if (USE_API) {
+      return this.storage.createLesson(lessonData);
+    }
+
     const lessons = await this.getAllLessons();
     
     const newLesson: Lesson = {
@@ -49,6 +61,10 @@ class LessonService {
     id: number,
     updates: Partial<Omit<Lesson, "id" | "createdAt">>
   ): Promise<Lesson> {
+    if (USE_API) {
+      return this.storage.updateLesson(id, updates);
+    }
+
     const lessons = await this.getAllLessons();
     const index = lessons.findIndex((lesson) => lesson.id === id);
 
@@ -71,6 +87,10 @@ class LessonService {
    * @throws Error if lesson not found
    */
   async deleteLesson(id: number): Promise<void> {
+    if (USE_API) {
+      return this.storage.deleteLesson(id);
+    }
+
     const lessons = await this.getAllLessons();
     const filtered = lessons.filter((lesson) => lesson.id !== id);
 
