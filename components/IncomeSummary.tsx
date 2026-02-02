@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Lesson } from "@/lib/types/lesson";
 import {
   getCurrentMonthIncome,
@@ -18,7 +21,33 @@ interface IncomeSummaryProps {
   lessons: Lesson[];
 }
 
+const MONTHLY_GOAL_KEY = "tutor_monthly_goal";
+
 export function IncomeSummary({ lessons }: IncomeSummaryProps) {
+  const [monthlyGoal, setMonthlyGoal] = useState<number>(2000);
+  const [goalInput, setGoalInput] = useState<string>("2000");
+
+  useEffect(() => {
+    const stored = localStorage.getItem(MONTHLY_GOAL_KEY);
+    if (stored) {
+      const parsed = parseFloat(stored);
+      if (!isNaN(parsed) && parsed > 0) {
+        setMonthlyGoal(parsed);
+        setGoalInput(parsed.toString());
+      }
+    }
+  }, []);
+
+  const handleGoalChange = () => {
+    const newGoal = parseFloat(goalInput);
+    if (!isNaN(newGoal) && newGoal > 0) {
+      setMonthlyGoal(newGoal);
+      localStorage.setItem(MONTHLY_GOAL_KEY, newGoal.toString());
+    } else {
+      setGoalInput(monthlyGoal.toString());
+    }
+  };
+
   const totalIncome = calculateTotalIncome(lessons);
   const currentMonthIncome = getCurrentMonthIncome(lessons);
   const currentWeekIncome = getCurrentWeekIncome(lessons);
@@ -26,8 +55,6 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
   const weekBreakdown = getCurrentWeekIncomeBreakdown(lessons);
   const currentMonthData = getCurrentMonthIncomeBreakdown(lessons);
 
-  // Set a monthly income goal (can be made configurable later)
-  const monthlyGoal = 2000; // ₴2000 per month
   const monthlyProgress = Math.min(
     (currentMonthIncome / monthlyGoal) * 100,
     100,
@@ -76,8 +103,19 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
           <div className="text-3xl font-bold text-primary">
             {formatCurrency(currentMonthIncome)}
           </div>
-          <div className="text-sm text-muted-foreground">
-            Goal: {formatCurrency(monthlyGoal)}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Goal:</span>
+            <Input
+              type="number"
+              value={goalInput}
+              onChange={(e) => setGoalInput(e.target.value)}
+              onBlur={handleGoalChange}
+              onKeyDown={(e) => e.key === "Enter" && handleGoalChange()}
+              className="w-23 h-8 text-sm"
+              min="0"
+              step="100"
+            />
+            <span className="text-sm text-muted-foreground">₴</span>
           </div>
           <Progress value={monthlyProgress} className="h-3" />
           <div className="text-sm text-muted-foreground">
