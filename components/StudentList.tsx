@@ -55,14 +55,16 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
 
   // Sort students alphabetically by name
   const sortedStudents = [...filteredStudents].sort((a, b) =>
-    a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name),
   );
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="transition-shadow hover:shadow-md">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <CardTitle>Students ({students.length})</CardTitle>
+          <CardTitle className="text-xl">
+            Students ({students.length})
+          </CardTitle>
           {students.length > 0 && (
             <div className="w-64">
               <Input
@@ -70,46 +72,50 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
                 placeholder="Search students..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-10"
               />
             </div>
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {filteredStudents.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
+          <div className="py-12 text-center text-muted-foreground">
             <p>No students found matching "{searchQuery}"</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {sortedStudents.map((student) => {
               const isDeleting = deletingId === student.id;
 
               return (
                 <div
                   key={student.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  className="flex items-center justify-between p-6 border rounded-xl hover:bg-accent/30 hover:border-accent transition-all duration-200 hover:shadow-sm"
                 >
-                  <div className="flex-1">
-                    <div className="font-medium">{student.name}</div>
-                    <div className="text-sm text-muted-foreground">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-base mb-2">
+                      {student.name}
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-1">
                       ₴{student.hourlyRate}/hr
                       {student.email && ` • ${student.email}`}
                       {student.phone && ` • ${student.phone}`}
                     </div>
                     {student.notes && (
-                      <div className="text-sm text-muted-foreground mt-1">
+                      <div className="text-sm text-muted-foreground">
                         {student.notes}
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3 ml-4">
                     {onEdit && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onEdit(student)}
                         disabled={isDeleting}
+                        className="h-9 px-4 hover:bg-accent hover:border-accent-foreground/20"
                       >
                         Edit
                       </Button>
@@ -119,6 +125,7 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
                       size="sm"
                       onClick={() => handleDelete(student.id)}
                       disabled={isDeleting}
+                      className="h-9 px-4 hover:bg-destructive/90"
                     >
                       {isDeleting ? "Deleting..." : "Delete"}
                     </Button>

@@ -21,14 +21,22 @@ export function LessonForm({
   initialData,
   submitLabel = "Add Lesson",
 }: LessonFormProps) {
-  const [studentName, setStudentName] = useState(initialData?.studentName || "");
+  const [studentName, setStudentName] = useState(
+    initialData?.studentName || "",
+  );
   const [hourlyRate, setHourlyRate] = useState(
-    initialData?.hourlyRate?.toString() || ""
+    initialData?.hourlyRate?.toString() || "",
   );
   const [duration, setDuration] = useState(
-    initialData?.duration?.toString() || "1"
+    initialData?.duration?.toString() || "1",
   );
-  const [date, setDate] = useState(initialData?.date || "");
+  const [date, setDate] = useState(
+    initialData?.date ||
+      (() => {
+        const today = new Date();
+        return today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      })(),
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +79,10 @@ export function LessonForm({
         setStudentName("");
         setHourlyRate("");
         setDuration("1");
-        setDate("");
+        setDate(() => {
+          const today = new Date();
+          return today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+        });
       }
     } catch (err) {
       const errorMessage =
@@ -87,16 +98,19 @@ export function LessonForm({
       <CardHeader>
         <CardTitle>{initialData ? "Edit Lesson" : "Add New Lesson"}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+            <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg border border-destructive/20">
               {error}
             </div>
           )}
 
-          <div className="space-y-2">
-            <label htmlFor="studentName" className="text-sm font-medium">
+          <div className="space-y-3">
+            <label
+              htmlFor="studentName"
+              className="text-sm font-semibold text-foreground"
+            >
               Student Name
             </label>
             <StudentAutocomplete
@@ -116,9 +130,12 @@ export function LessonForm({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="hourlyRate" className="text-sm font-medium">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label
+                htmlFor="hourlyRate"
+                className="text-sm font-semibold text-foreground"
+              >
                 Hourly Rate (₴)
               </label>
               <Input
@@ -130,11 +147,15 @@ export function LessonForm({
                 value={hourlyRate}
                 onChange={(e) => setHourlyRate(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="duration" className="text-sm font-medium">
+            <div className="space-y-3">
+              <label
+                htmlFor="duration"
+                className="text-sm font-semibold text-foreground"
+              >
                 Duration (hours)
               </label>
               <Input
@@ -146,12 +167,16 @@ export function LessonForm({
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="date" className="text-sm font-medium">
+          <div className="space-y-3">
+            <label
+              htmlFor="date"
+              className="text-sm font-semibold text-foreground"
+            >
               Date
             </label>
             <Input
@@ -160,15 +185,21 @@ export function LessonForm({
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
+              className="h-11"
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting}>
+          <div className="flex gap-4 pt-2">
+            <Button type="submit" disabled={isSubmitting} className="h-11 px-6">
               {isSubmitting ? "Saving..." : submitLabel}
             </Button>
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="h-11 px-6"
+              >
                 Cancel
               </Button>
             )}
