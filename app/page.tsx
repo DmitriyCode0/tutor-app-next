@@ -145,11 +145,18 @@ export default function Home() {
           </CardContent>
         </Card>
         <div className="flex-shrink-0">
-          <Link href="/students">
-            <Button variant="outline" size="lg" className="w-full lg:w-auto">
-              Manage Students
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/lessons">
+              <Button variant="outline" size="lg" className="w-full lg:w-auto">
+                View Lessons
+              </Button>
+            </Link>
+            <Link href="/students">
+              <Button variant="outline" size="lg" className="w-full lg:w-auto">
+                Manage Students
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

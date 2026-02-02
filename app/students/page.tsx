@@ -72,6 +72,9 @@ export default function StudentsPage() {
         </Card>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link href="/lessons">
+            <Button variant="outline">View Lessons</Button>
+          </Link>
           <Link href="/">
             <Button variant="outline">Back to Dashboard</Button>
           </Link>
