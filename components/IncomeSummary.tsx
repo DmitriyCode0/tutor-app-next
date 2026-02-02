@@ -26,6 +26,7 @@ const MONTHLY_GOAL_KEY = "tutor_monthly_goal";
 export function IncomeSummary({ lessons }: IncomeSummaryProps) {
   const [monthlyGoal, setMonthlyGoal] = useState<number>(2000);
   const [goalInput, setGoalInput] = useState<string>("2000");
+  const [weekOffset, setWeekOffset] = useState<number>(0);
 
   useEffect(() => {
     const stored = localStorage.getItem(MONTHLY_GOAL_KEY);
@@ -46,6 +47,50 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
     } else {
       setGoalInput(monthlyGoal.toString());
     }
+  };
+
+  const getWeekTitle = (offset: number): string => {
+    if (offset === 0) return "This Week";
+    if (offset === -1) return "Last Week";
+    if (offset === 1) return "Next Week";
+    return `${offset > 0 ? "+" : ""}${offset} Week${Math.abs(offset) !== 1 ? "s" : ""}`;
+  };
+
+  const getWeekIncome = (offset: number): number => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay() + offset * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    return lessons
+      .filter((lesson) => {
+        const lessonDate = new Date(lesson.date);
+        return lessonDate >= weekStart && lessonDate <= weekEnd;
+      })
+      .reduce((total, lesson) => total + lesson.hourlyRate * lesson.duration, 0);
+  };
+
+  const getWeekLessonCount = (offset: number): number => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay() + offset * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    return lessons.filter((lesson) => {
+      const lessonDate = new Date(lesson.date);
+      return lessonDate >= weekStart && lessonDate <= weekEnd;
+    }).length;
+  };
+
+  const getWeekDateRange = (offset: number): string => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay() + offset * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    return formatDateRange(weekStart, weekEnd);
   };
 
   const totalIncome = calculateTotalIncome(lessons);
@@ -69,20 +114,40 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">This Week</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWeekOffset(weekOffset - 1)}
+                className="h-6 w-6 p-0"
+              >
+                ‹
+              </Button>
+              <CardTitle className="text-base font-semibold">
+                {getWeekTitle(weekOffset)}
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWeekOffset(weekOffset + 1)}
+                className="h-6 w-6 p-0"
+              >
+                ›
+              </Button>
+            </div>
             <Badge variant="secondary" className="text-xs font-medium">
-              {weekBreakdown.lessonCount} lesson
-              {weekBreakdown.lessonCount !== 1 ? "s" : ""}
+              {getWeekLessonCount(weekOffset)} lesson
+              {getWeekLessonCount(weekOffset) !== 1 ? "s" : ""}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-3">
           <div className="text-3xl font-bold text-primary">
-            {formatCurrency(currentWeekIncome)}
+            {formatCurrency(getWeekIncome(weekOffset))}
           </div>
           <Separator />
           <div className="text-sm text-muted-foreground">
-            {formatDateRange(weekBreakdown.weekStart, weekBreakdown.weekEnd)}
+            {getWeekDateRange(weekOffset)}
           </div>
         </CardContent>
       </Card>

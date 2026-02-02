@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Student } from "@/lib/types/student";
-
-const STUDENTS_STORAGE_KEY = "tutor_students";
+import { loadStudents as loadFromStorage, saveStudents as saveToStorage } from "@/lib/utils/storage";
 
 interface UseStudentsReturn {
   students: Student[];
@@ -35,17 +34,7 @@ export function useStudents(): UseStudentsReturn {
     try {
       setLoading(true);
       setError(null);
-      const stored = localStorage.getItem(STUDENTS_STORAGE_KEY);
-      if (!stored) {
-        setStudents([]);
-        return;
-      }
-      const loadedStudents = JSON.parse(stored) as Student[];
-      if (!Array.isArray(loadedStudents)) {
-        console.warn("Invalid data in storage, returning empty array");
-        setStudents([]);
-        return;
-      }
+      const loadedStudents = loadFromStorage();
       setStudents(loadedStudents);
     } catch (err) {
       const errorMessage =
@@ -60,8 +49,7 @@ export function useStudents(): UseStudentsReturn {
 
   const saveStudents = useCallback(async (studentsToSave: Student[]) => {
     try {
-      const serialized = JSON.stringify(studentsToSave);
-      localStorage.setItem(STUDENTS_STORAGE_KEY, serialized);
+      saveToStorage(studentsToSave);
     } catch (error) {
       if (
         error instanceof DOMException &&

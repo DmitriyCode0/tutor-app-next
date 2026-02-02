@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Lesson } from "@/lib/types/lesson";
-
-const LESSONS_STORAGE_KEY = "tutor_lessons";
+import { loadLessons as loadFromStorage, saveLessons as saveToStorage } from "@/lib/utils/storage";
 
 interface UseLessonsReturn {
   lessons: Lesson[];
@@ -31,17 +30,7 @@ export function useLessons(): UseLessonsReturn {
     try {
       setLoading(true);
       setError(null);
-      const stored = localStorage.getItem(LESSONS_STORAGE_KEY);
-      if (!stored) {
-        setLessons([]);
-        return;
-      }
-      const loadedLessons = JSON.parse(stored) as Lesson[];
-      if (!Array.isArray(loadedLessons)) {
-        console.warn("Invalid data in storage, returning empty array");
-        setLessons([]);
-        return;
-      }
+      const loadedLessons = loadFromStorage();
       setLessons(loadedLessons);
     } catch (err) {
       const errorMessage =
@@ -56,8 +45,7 @@ export function useLessons(): UseLessonsReturn {
 
   const saveLessons = useCallback(async (lessonsToSave: Lesson[]) => {
     try {
-      const serialized = JSON.stringify(lessonsToSave);
-      localStorage.setItem(LESSONS_STORAGE_KEY, serialized);
+      saveToStorage(lessonsToSave);
     } catch (error) {
       if (
         error instanceof DOMException &&
