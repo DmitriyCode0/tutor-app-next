@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Student } from "@/lib/types/student";
-import { loadStudents as loadFromStorage, saveStudents as saveToStorage } from "@/lib/utils/storage";
+import {
+  loadStudents as loadFromStorage,
+  saveStudents as saveToStorage,
+} from "@/lib/utils/storage";
 
 interface UseStudentsReturn {
   students: Student[];

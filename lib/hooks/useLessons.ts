@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Lesson } from "@/lib/types/lesson";
-import { loadLessons as loadFromStorage, saveLessons as saveToStorage } from "@/lib/utils/storage";
+import {
+  loadLessons as loadFromStorage,
+  saveLessons as saveToStorage,
+} from "@/lib/utils/storage";
 
 interface UseLessonsReturn {
   lessons: Lesson[];

@@ -68,7 +68,10 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
         const lessonDate = new Date(lesson.date);
         return lessonDate >= weekStart && lessonDate <= weekEnd;
       })
-      .reduce((total, lesson) => total + lesson.hourlyRate * lesson.duration, 0);
+      .reduce(
+        (total, lesson) => total + lesson.hourlyRate * lesson.duration,
+        0,
+      );
   };
 
   const getWeekLessonCount = (offset: number): number => {

@@ -112,18 +112,9 @@ export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
                       <span className="font-semibold text-base truncate">
                         {lesson.studentName}
                       </span>
-                      {isRecent && (
-                        <Badge
-                          variant="secondary"
-                          className="text-xs font-medium shrink-0"
-                        >
-                          Recent
-                        </Badge>
-                      )}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {formatDisplayDate(lesson.date)} • {lesson.duration}h @ ₴
-                      {lesson.hourlyRate}/hr
+                      {formatDisplayDate(lesson.date)}
                     </div>
                   </div>
                   <div className="flex items-center gap-6 ml-4">
@@ -132,9 +123,6 @@ export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
                         <div className="text-right cursor-help group">
                           <div className="font-bold text-lg text-primary group-hover:scale-105 transition-transform">
                             ₴{income.toFixed(2)}
-                          </div>
-                          <div className="text-xs text-muted-foreground font-medium">
-                            Income
                           </div>
                         </div>
                       </TooltipTrigger>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { StudentForm } from "@/components/StudentForm";
 import { StudentList } from "@/components/StudentList";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -54,41 +56,40 @@ export default function StudentsPage() {
   }
 
   return (
-    <main className="container mx-auto p-4 md:p-10 space-y-6">
-      <div className="flex items-center justify-between">
-        <Card className="mb-4 mt-4 mr-4">
-          <CardHeader>
-            <CardTitle className="text-2xl mb-4 mt-4 mr-4">
+    <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
+        <Card className="flex-1 max-w-2xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-2xl font-bold">
               Student Management
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Manage your students and their default hourly rates. When you add
-              a lesson, you can quickly select a student and their rate will be
-              auto-filled.
+          <CardContent className="pt-0">
+            <p className="text-muted-foreground leading-relaxed">
+              Manage your students and their default hourly rates.
             </p>
           </CardContent>
         </Card>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Link href="/lessons">
-            <Button variant="outline">View Lessons</Button>
-          </Link>
-          <Link href="/">
-            <Button variant="outline">Back to Dashboard</Button>
-          </Link>
+          <div className="flex gap-2 flex-col sm:flex-row">
+            <Link href="/lessons">
+              <Button variant="outline" size="lg" className="w-full lg:w-auto">
+                View Lessons
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" size="lg" className="w-full lg:w-auto">
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
       {error && (
-        <Card>
-          <CardContent className="py-4">
-            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-              Error: {error}
-            </div>
-          </CardContent>
-        </Card>
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <StudentForm
@@ -97,6 +98,8 @@ export default function StudentsPage() {
         initialData={editingStudent || undefined}
         submitLabel={editingStudent ? "Update Student" : "Add Student"}
       />
+
+      <Separator className="my-10" />
 
       <StudentList
         students={students}

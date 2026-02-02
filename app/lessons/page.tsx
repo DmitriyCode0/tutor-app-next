@@ -12,8 +12,16 @@ import { Lesson } from "@/lib/types/lesson";
 import { Student } from "@/lib/types/student";
 
 export default function LessonsPage() {
-  const { lessons, loading: lessonsLoading, error: lessonsError } = useLessons();
-  const { students, loading: studentsLoading, error: studentsError } = useStudents();
+  const {
+    lessons,
+    loading: lessonsLoading,
+    error: lessonsError,
+  } = useLessons();
+  const {
+    students,
+    loading: studentsLoading,
+    error: studentsError,
+  } = useStudents();
 
   const formatCurrency = (amount: number): string => {
     return `₴${amount.toFixed(2)}`;
@@ -34,7 +42,7 @@ export default function LessonsPage() {
   const getStudentTotalIncome = (studentName: string): number => {
     return getStudentLessons(studentName).reduce(
       (total, lesson) => total + lesson.hourlyRate * lesson.duration,
-      0
+      0,
     );
   };
 
@@ -99,16 +107,24 @@ export default function LessonsPage() {
             const totalIncome = getStudentTotalIncome(student.name);
 
             return (
-              <Card key={student.id} className="transition-shadow hover:shadow-md">
+              <Card
+                key={student.id}
+                className="transition-shadow hover:shadow-md"
+              >
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-xl">{student.name}</CardTitle>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {formatCurrency(student.hourlyRate)}/hour • {studentLessons.length} lesson{studentLessons.length !== 1 ? "s" : ""}
+                        {formatCurrency(student.hourlyRate)}/hour •{" "}
+                        {studentLessons.length} lesson
+                        {studentLessons.length !== 1 ? "s" : ""}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-lg font-semibold">
+                    <Badge
+                      variant="secondary"
+                      className="text-lg font-semibold"
+                    >
                       {formatCurrency(totalIncome)}
                     </Badge>
                   </div>
@@ -121,7 +137,11 @@ export default function LessonsPage() {
                   ) : (
                     <div className="space-y-3">
                       {studentLessons
-                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .sort(
+                          (a, b) =>
+                            new Date(b.date).getTime() -
+                            new Date(a.date).getTime(),
+                        )
                         .map((lesson) => (
                           <div
                             key={lesson.id}
@@ -132,12 +152,16 @@ export default function LessonsPage() {
                                 {formatDate(lesson.date)}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {lesson.duration} hour{lesson.duration !== 1 ? "s" : ""} × {formatCurrency(lesson.hourlyRate)}
+                                {lesson.duration} hour
+                                {lesson.duration !== 1 ? "s" : ""} ×{" "}
+                                {formatCurrency(lesson.hourlyRate)}
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="font-semibold">
-                                {formatCurrency(lesson.hourlyRate * lesson.duration)}
+                                {formatCurrency(
+                                  lesson.hourlyRate * lesson.duration,
+                                )}
                               </div>
                             </div>
                           </div>

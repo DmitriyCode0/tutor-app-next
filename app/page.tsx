@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { LessonForm } from "@/components/LessonForm";
 import { LessonList } from "@/components/LessonList";
 import { IncomeSummary } from "@/components/IncomeSummary";
@@ -131,21 +132,21 @@ export default function Home() {
   return (
     <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
-        <Card className="flex-1 max-w-2xl">
+        <Card className="flex-1 max-w-auto">
           <CardHeader className="pb-4">
             <CardTitle className="text-2xl font-bold">
-              Tutor Income Calculator
+              Income Calculator
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <p className="text-muted-foreground leading-relaxed">
-              Track your tutoring lessons and calculate your income by week and
-              month.
+              Track and calculate your income by week and month.
             </p>
           </CardContent>
         </Card>
-        <div className="flex-shrink-0">
-          <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <div className="flex gap-2 flex-col sm:flex-row">
             <Link href="/lessons">
               <Button variant="outline" size="lg" className="w-full lg:w-auto">
                 View Lessons
