@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Student } from "@/lib/types/student";
 
 interface StudentFormProps {
-  onSubmit: (student: Omit<Student, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  onSubmit: (
+    student: Omit<Student, "id" | "createdAt" | "updatedAt">,
+  ) => Promise<void>;
   onCancel?: () => void;
   initialData?: Partial<Student>;
   submitLabel?: string;
@@ -21,7 +23,7 @@ export function StudentForm({
 }: StudentFormProps) {
   const [name, setName] = useState(initialData?.name || "");
   const [hourlyRate, setHourlyRate] = useState(
-    initialData?.hourlyRate?.toString() || ""
+    initialData?.hourlyRate?.toString() || "",
   );
   const [email, setEmail] = useState(initialData?.email || "");
   const [phone, setPhone] = useState(initialData?.phone || "");
@@ -74,18 +76,23 @@ export function StudentForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? "Edit Student" : "Add New Student"}</CardTitle>
+        <CardTitle>
+          {initialData ? "Edit Student" : "Add New Student"}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+            <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg border border-destructive/20">
               {error}
             </div>
           )}
 
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
+          <div className="space-y-3">
+            <label
+              htmlFor="name"
+              className="text-sm font-semibold text-foreground"
+            >
               Student Name <span className="text-destructive">*</span>
             </label>
             <Input
@@ -95,11 +102,15 @@ export function StudentForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              className="h-11"
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="hourlyRate" className="text-sm font-medium">
+          <div className="space-y-3">
+            <label
+              htmlFor="hourlyRate"
+              className="text-sm font-semibold text-foreground"
+            >
               Hourly Rate (₴) <span className="text-destructive">*</span>
             </label>
             <Input
@@ -111,12 +122,16 @@ export function StudentForm({
               value={hourlyRate}
               onChange={(e) => setHourlyRate(e.target.value)}
               required
+              className="h-11"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label
+                htmlFor="email"
+                className="text-sm font-semibold text-foreground"
+              >
                 Email
               </label>
               <Input
@@ -125,11 +140,15 @@ export function StudentForm({
                 placeholder="student@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="h-11"
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium">
+            <div className="space-y-3">
+              <label
+                htmlFor="phone"
+                className="text-sm font-semibold text-foreground"
+              >
                 Phone
               </label>
               <Input
@@ -138,17 +157,21 @@ export function StudentForm({
                 placeholder="(555) 123-4567"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                className="h-11"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="notes" className="text-sm font-medium">
+          <div className="space-y-3">
+            <label
+              htmlFor="notes"
+              className="text-sm font-semibold text-foreground"
+            >
               Notes
             </label>
             <textarea
               id="notes"
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-4 py-3 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               placeholder="Additional notes about the student..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -156,12 +179,17 @@ export function StudentForm({
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting}>
+          <div className="flex gap-4 pt-2">
+            <Button type="submit" disabled={isSubmitting} className="h-11 px-6">
               {isSubmitting ? "Saving..." : submitLabel}
             </Button>
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="h-11 px-6"
+              >
                 Cancel
               </Button>
             )}

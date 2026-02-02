@@ -2,14 +2,20 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Student } from "@/lib/types/student";
-import { studentService } from "@/lib/services/studentService";
+
+const STUDENTS_STORAGE_KEY = "tutor_students";
 
 interface UseStudentsReturn {
   students: Student[];
   loading: boolean;
   error: string | null;
-  addStudent: (student: Omit<Student, "id" | "createdAt" | "updatedAt">) => Promise<void>;
-  updateStudent: (id: number, updates: Partial<Omit<Student, "id" | "createdAt">>) => Promise<void>;
+  addStudent: (
+    student: Omit<Student, "id" | "createdAt" | "updatedAt">,
+  ) => Promise<void>;
+  updateStudent: (
+    id: number,
+    updates: Partial<Omit<Student, "id" | "createdAt">>,
+  ) => Promise<void>;
   deleteStudent: (id: number) => Promise<void>;
   searchStudents: (query: string) => Promise<Student[]>;
   getStudentByName: (name: string) => Promise<Student | null>;
@@ -29,79 +35,178 @@ export function useStudents(): UseStudentsReturn {
     try {
       setLoading(true);
       setError(null);
-      const loadedStudents = await studentService.getAllStudents();
+      const stored = localStorage.getItem(STUDENTS_STORAGE_KEY);
+      if (!stored) {
+        setStudents([]);
+        return;
+      }
+      const loadedStudents = JSON.parse(stored) as Student[];
+      if (!Array.isArray(loadedStudents)) {
+        console.warn("Invalid data in storage, returning empty array");
+        setStudents([]);
+        return;
+      }
       setStudents(loadedStudents);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load students";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load students";
       setError(errorMessage);
-      console.error("Error loading students:", err);
+      console.error("Error loading students from storage:", err);
+      setStudents([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const saveStudents = useCallback(async (studentsToSave: Student[]) => {
+    try {
+      const serialized = JSON.stringify(studentsToSave);
+      localStorage.setItem(STUDENTS_STORAGE_KEY, serialized);
+    } catch (error) {
+      if (
+        error instanceof DOMException &&
+        error.name === "QuotaExceededError"
+      ) {
+        throw new Error(
+          "Storage quota exceeded. Please delete some students or clear old data.",
+        );
+      }
+      throw new Error("Failed to save students to storage");
+    }
+  }, []);
+
+  const getStudentByName = useCallback(
+    (name: string): Student | null => {
+      const normalizedName = name.trim().toLowerCase();
+      return (
+        students.find(
+          (student) => student.name.toLowerCase() === normalizedName,
+        ) || null
+      );
+    },
+    [students],
+  );
+
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
 
-  const addStudent = useCallback(async (studentData: Omit<Student, "id" | "createdAt" | "updatedAt">) => {
-    try {
-      setError(null);
-      const newStudent = await studentService.addStudent(studentData);
-      setStudents((prev) => [...prev, newStudent]);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to add student";
-      setError(errorMessage);
-      throw err;
-    }
-  }, []);
+  const addStudent = useCallback(
+    async (studentData: Omit<Student, "id" | "createdAt" | "updatedAt">) => {
+      try {
+        setError(null);
 
-  const updateStudent = useCallback(async (
-    id: number,
-    updates: Partial<Omit<Student, "id" | "createdAt">>
-  ) => {
-    try {
-      setError(null);
-      const updatedStudent = await studentService.updateStudent(id, updates);
-      setStudents((prev) =>
-        prev.map((student) => (student.id === id ? updatedStudent : student))
-      );
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to update student";
-      setError(errorMessage);
-      throw err;
-    }
-  }, []);
+        // Check if student with same name already exists
+        const existing = getStudentByName(studentData.name);
+        if (existing) {
+          throw new Error(
+            `Student with name "${studentData.name}" already exists`,
+          );
+        }
 
-  const deleteStudent = useCallback(async (id: number) => {
-    try {
-      setError(null);
-      await studentService.deleteStudent(id);
-      setStudents((prev) => prev.filter((student) => student.id !== id));
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to delete student";
-      setError(errorMessage);
-      throw err;
-    }
-  }, []);
+        const now = new Date().toISOString();
+        const newStudent: Student = {
+          ...studentData,
+          id: Date.now(),
+          createdAt: now,
+          updatedAt: now,
+        };
 
-  const searchStudents = useCallback(async (query: string): Promise<Student[]> => {
-    try {
-      return await studentService.searchStudents(query);
-    } catch (err) {
-      console.error("Error searching students:", err);
-      return [];
-    }
-  }, []);
+        const updatedStudents = [...students, newStudent];
+        await saveStudents(updatedStudents);
+        setStudents(updatedStudents);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to add student";
+        setError(errorMessage);
+        throw err;
+      }
+    },
+    [students, saveStudents, getStudentByName],
+  );
 
-  const getStudentByName = useCallback(async (name: string): Promise<Student | null> => {
-    try {
-      return await studentService.getStudentByName(name);
-    } catch (err) {
-      console.error("Error getting student by name:", err);
-      return null;
-    }
-  }, []);
+  const updateStudent = useCallback(
+    async (id: number, updates: Partial<Omit<Student, "id" | "createdAt">>) => {
+      try {
+        setError(null);
+        const index = students.findIndex((student) => student.id === id);
+
+        if (index === -1) {
+          throw new Error(`Student with id ${id} not found`);
+        }
+
+        // If name is being updated, check for duplicates
+        if (updates.name && updates.name !== students[index].name) {
+          const existing = getStudentByName(updates.name);
+          if (existing && existing.id !== id) {
+            throw new Error(
+              `Student with name "${updates.name}" already exists`,
+            );
+          }
+        }
+
+        const updatedStudent = {
+          ...students[index],
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        };
+
+        const updatedStudents = [...students];
+        updatedStudents[index] = updatedStudent;
+
+        await saveStudents(updatedStudents);
+        setStudents(updatedStudents);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update student";
+        setError(errorMessage);
+        throw err;
+      }
+    },
+    [students, saveStudents, getStudentByName],
+  );
+
+  const deleteStudent = useCallback(
+    async (id: number) => {
+      try {
+        setError(null);
+        const filtered = students.filter((student) => student.id !== id);
+
+        if (filtered.length === students.length) {
+          throw new Error(`Student with id ${id} not found`);
+        }
+
+        await saveStudents(filtered);
+        setStudents(filtered);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to delete student";
+        setError(errorMessage);
+        throw err;
+      }
+    },
+    [students, saveStudents],
+  );
+
+  const searchStudents = useCallback(
+    async (query: string): Promise<Student[]> => {
+      try {
+        const normalizedQuery = query.trim().toLowerCase();
+
+        if (!normalizedQuery) {
+          return students;
+        }
+
+        return students.filter((student) =>
+          student.name.toLowerCase().includes(normalizedQuery),
+        );
+      } catch (err) {
+        console.error("Error searching students:", err);
+        return [];
+      }
+    },
+    [students],
+  );
 
   return {
     students,
@@ -111,7 +216,7 @@ export function useStudents(): UseStudentsReturn {
     updateStudent,
     deleteStudent,
     searchStudents,
-    getStudentByName,
+    getStudentByName: async (name: string) => getStudentByName(name),
     refreshStudents: loadStudents,
   };
 }
