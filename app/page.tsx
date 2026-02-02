@@ -161,22 +161,22 @@ export default function Home() {
         </div>
       </div>
 
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <IncomeSummary lessons={lessons} />
-
-      <Separator className="my-10" />
-
       <LessonForm
         onSubmit={handleSubmit}
         onCancel={editingLesson ? handleCancelEdit : undefined}
         initialData={editingLesson || undefined}
         submitLabel={editingLesson ? "Update Lesson" : "Add Lesson"}
       />
+
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Separator className="my-10" />
+
+      <IncomeSummary lessons={lessons} />
 
       <Separator className="my-10" />
 
