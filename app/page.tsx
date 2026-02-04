@@ -12,6 +12,7 @@ import { LessonList } from "@/components/LessonList";
 import { IncomeSummary } from "@/components/IncomeSummary";
 import { useLessons } from "@/lib/hooks/useLessons";
 import { Lesson } from "@/lib/types/lesson";
+import { formatDateString } from "@/lib/utils/dateUtils";
 
 export default function Home() {
   const { lessons, loading, error, addLesson, updateLesson, deleteLesson } =
@@ -128,6 +129,9 @@ export default function Home() {
     );
   }
 
+  const todayKey = formatDateString(new Date());
+  const todaysLessons = lessons.filter((l) => l.date === todayKey);
+
   return (
     <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
       <LessonForm
@@ -149,8 +153,9 @@ export default function Home() {
 
       <Separator className="my-10" />
 
+      <h2 className="text-lg font-medium mb-4">Today's lessons</h2>
       <LessonList
-        lessons={lessons}
+        lessons={todaysLessons}
         onDelete={deleteLesson}
         onEdit={handleEdit}
       />
