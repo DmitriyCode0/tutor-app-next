@@ -10,6 +10,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Lesson } from "@/lib/types/lesson";
 import { calculateLessonIncome } from "@/lib/utils/incomeUtils";
 import { parseDateString } from "@/lib/utils/dateUtils";
@@ -22,15 +32,18 @@ interface LessonListProps {
 
 export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this lesson?")) {
-      return;
-    }
+  const promptDelete = (lesson: Lesson) => {
+    setDeleteTarget(lesson);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      setDeletingId(id);
-      await onDelete(id);
+      setDeletingId(deleteTarget.id);
+      await onDelete(deleteTarget.id);
+      setDeleteTarget(null);
     } catch (error) {
       console.error("Failed to delete lesson:", error);
       alert("Failed to delete lesson. Please try again.");
@@ -156,7 +169,7 @@ export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDelete(lesson.id)}
+                            onClick={() => promptDelete(lesson)}
                             disabled={isDeleting}
                             className="h-9 px-4 hover:bg-destructive/90"
                           >
@@ -175,6 +188,32 @@ export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
           </div>
         </TooltipProvider>
       </CardContent>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the lesson for{" "}
+              {deleteTarget?.studentName} on{" "}
+              {deleteTarget ? formatDisplayDate(deleteTarget.date) : ""}? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

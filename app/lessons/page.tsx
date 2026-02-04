@@ -22,6 +22,17 @@ import {
   isDateInRange,
   formatDateRange,
 } from "@/lib/utils/dateUtils";
+import { EditLessonDialog } from "@/components/EditLessonDialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 export default function LessonsPage() {
   const {
@@ -39,6 +50,8 @@ export default function LessonsPage() {
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [sortBy, setSortBy] = useState<"date" | "student">("date");
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
 
   const currentDate = new Date();
   const baseDate = new Date(currentDate);
@@ -70,12 +83,15 @@ export default function LessonsPage() {
     });
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this lesson?")) {
-      return;
-    }
+  const promptDelete = (lesson: Lesson) => {
+    setDeleteTarget(lesson);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await deleteLesson(id);
+      await deleteLesson(deleteTarget.id);
+      setDeleteTarget(null);
     } catch (error) {
       console.error("Failed to delete lesson:", error);
       alert("Failed to delete lesson. Please try again.");
@@ -216,20 +232,14 @@ export default function LessonsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            // Scroll to form and populate edit data
-                            const editEvent = new CustomEvent("editLesson", {
-                              detail: lesson,
-                            });
-                            window.dispatchEvent(editEvent);
-                          }}
+                          onClick={() => setEditingLesson(lesson)}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(lesson.id)}
+                          onClick={() => setDeleteTarget(lesson)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -242,6 +252,45 @@ export default function LessonsPage() {
           })}
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the lesson for{" "}
+              {deleteTarget?.studentName} on{" "}
+              {deleteTarget ? formatDate(deleteTarget.date) : ""}? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit dialog */}
+      <EditLessonDialog
+        open={!!editingLesson}
+        onOpenChange={(open) => {
+          if (!open) setEditingLesson(null);
+        }}
+        lesson={editingLesson}
+        onSave={async (id, updates) => {
+          await updateLesson(id, updates);
+          setEditingLesson(null);
+        }}
+      />
     </main>
   );
 }

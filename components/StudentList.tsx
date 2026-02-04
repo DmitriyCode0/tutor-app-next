@@ -4,6 +4,16 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Student } from "@/lib/types/student";
 
 interface StudentListProps {
@@ -15,15 +25,18 @@ interface StudentListProps {
 export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this student?")) {
-      return;
-    }
+  const promptDelete = (student: Student) => {
+    setDeleteTarget(student);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      setDeletingId(id);
-      await onDelete(id);
+      setDeletingId(deleteTarget.id);
+      await onDelete(deleteTarget.id);
+      setDeleteTarget(null);
     } catch (error) {
       console.error("Failed to delete student:", error);
       alert("Failed to delete student. Please try again.");
@@ -123,7 +136,7 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleDelete(student.id)}
+                      onClick={() => promptDelete(student)}
                       disabled={isDeleting}
                       className="h-9 px-4 hover:bg-destructive/90"
                     >
@@ -135,6 +148,29 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
             })}
           </div>
         )}
+        {/* Delete confirmation dialog */}
+        <AlertDialog
+          open={!!deleteTarget}
+          onOpenChange={(open) => {
+            if (!open) setDeleteTarget(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Student</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete {deleteTarget?.name}? This will
+                remove all lessons tied to this student.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
