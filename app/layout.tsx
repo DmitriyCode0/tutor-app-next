@@ -65,7 +65,7 @@ export default function RootLayout({
                   <SidebarTrigger className="-ml-1" />
                   <div className="flex items-center gap-2">
                     <ThemeToggle />
-                    <div className="hidden sm:block">
+                    <div>
                       <UserMenu />
                     </div>
                   </div>
