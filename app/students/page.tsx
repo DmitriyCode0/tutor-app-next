@@ -60,7 +60,7 @@ export default function StudentsPage() {
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
         <Card className="flex-1 max-w-2xl">
           <CardHeader className="pb-4">
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl font-bold font-architects">
               Student Management
             </CardTitle>
           </CardHeader>

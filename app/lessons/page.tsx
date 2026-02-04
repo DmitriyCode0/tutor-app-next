@@ -76,7 +76,9 @@ export default function LessonsPage() {
     <main className="container mx-auto p-4 md:p-10 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lessons by Student</h1>
+          <h1 className="text-3xl font-bold font-architects">
+            Lessons by Student
+          </h1>
           <p className="text-muted-foreground mt-2">
             View all lessons organized by student folders
           </p>
