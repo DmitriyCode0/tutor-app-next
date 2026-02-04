@@ -6,6 +6,13 @@ import {
   loadStudents as loadFromStorage,
   saveStudents as saveToStorage,
 } from "@/lib/utils/storage";
+import {
+  fetchStudents as fetchStudentsRemote,
+  createStudent as createStudentRemote,
+  updateStudent as updateStudentRemote,
+  removeStudent as removeStudentRemote,
+} from "@/lib/services/studentService";
+import { useAuth } from "@/lib/providers/auth-provider";
 
 interface UseStudentsReturn {
   students: Student[];
@@ -16,7 +23,7 @@ interface UseStudentsReturn {
   ) => Promise<void>;
   updateStudent: (
     id: number,
-    updates: Partial<Omit<Student, "id" | "createdAt">>,
+    updates: Partial<Omit<Student, "id" | "createdAt" | "updatedAt">>,
   ) => Promise<void>;
   deleteStudent: (id: number) => Promise<void>;
   searchStudents: (query: string) => Promise<Student[]>;
@@ -32,23 +39,37 @@ export function useStudents(): UseStudentsReturn {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { supabase, user, isLoading: authLoading } = useAuth();
 
   const loadStudents = useCallback(async () => {
+    if (authLoading) return;
+
+    if (!user) {
+      setStudents([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const loadedStudents = loadFromStorage();
-      setStudents(loadedStudents);
+      const remoteStudents = await fetchStudentsRemote(supabase, user.id);
+      setStudents(remoteStudents);
+      saveToStorage(remoteStudents);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load students";
       setError(errorMessage);
-      console.error("Error loading students from storage:", err);
-      setStudents([]);
+      const cached = loadFromStorage();
+      setStudents(cached);
+      console.error(
+        "Error loading students from Supabase, fell back to cache:",
+        err,
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authLoading, user, supabase]);
 
   const saveStudents = useCallback(async (studentsToSave: Student[]) => {
     try {
@@ -84,6 +105,10 @@ export function useStudents(): UseStudentsReturn {
 
   const addStudent = useCallback(
     async (studentData: Omit<Student, "id" | "createdAt" | "updatedAt">) => {
+      if (!user) {
+        throw new Error("You must be logged in to add students");
+      }
+
       try {
         setError(null);
 
@@ -96,14 +121,14 @@ export function useStudents(): UseStudentsReturn {
         }
 
         const now = new Date().toISOString();
-        const newStudent: Student = {
+        const createdStudent = await createStudentRemote(supabase, user.id, {
           ...studentData,
-          id: Date.now(),
           createdAt: now,
           updatedAt: now,
-        };
+          userId: user.id,
+        });
 
-        const updatedStudents = [...students, newStudent];
+        const updatedStudents = [...students, createdStudent];
         await saveStudents(updatedStudents);
         setStudents(updatedStudents);
       } catch (err) {
@@ -113,11 +138,18 @@ export function useStudents(): UseStudentsReturn {
         throw err;
       }
     },
-    [students, saveStudents, getStudentByName],
+    [students, supabase, user, saveStudents, getStudentByName],
   );
 
   const updateStudent = useCallback(
-    async (id: number, updates: Partial<Omit<Student, "id" | "createdAt">>) => {
+    async (
+      id: number,
+      updates: Partial<Omit<Student, "id" | "createdAt" | "updatedAt">>,
+    ) => {
+      if (!user) {
+        throw new Error("You must be logged in to update students");
+      }
+
       try {
         setError(null);
         const index = students.findIndex((student) => student.id === id);
@@ -136,11 +168,16 @@ export function useStudents(): UseStudentsReturn {
           }
         }
 
-        const updatedStudent = {
-          ...students[index],
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        };
+        const updatedStudent = await updateStudentRemote(
+          supabase,
+          user.id,
+          id,
+          {
+            ...updates,
+            updatedAt: new Date().toISOString(),
+            userId: user.id,
+          },
+        );
 
         const updatedStudents = [...students];
         updatedStudents[index] = updatedStudent;
@@ -154,13 +191,19 @@ export function useStudents(): UseStudentsReturn {
         throw err;
       }
     },
-    [students, saveStudents, getStudentByName],
+    [students, supabase, user, saveStudents, getStudentByName],
   );
 
   const deleteStudent = useCallback(
     async (id: number) => {
+      if (!user) {
+        throw new Error("You must be logged in to delete students");
+      }
+
       try {
         setError(null);
+        await removeStudentRemote(supabase, user.id, id);
+
         const filtered = students.filter((student) => student.id !== id);
 
         if (filtered.length === students.length) {
@@ -176,7 +219,7 @@ export function useStudents(): UseStudentsReturn {
         throw err;
       }
     },
-    [students, saveStudents],
+    [students, supabase, user, saveStudents],
   );
 
   const searchStudents = useCallback(

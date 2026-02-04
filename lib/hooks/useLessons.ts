@@ -6,15 +6,24 @@ import {
   loadLessons as loadFromStorage,
   saveLessons as saveToStorage,
 } from "@/lib/utils/storage";
+import {
+  fetchLessons as fetchLessonsRemote,
+  createLesson as createLessonRemote,
+  updateLesson as updateLessonRemote,
+  removeLesson as removeLessonRemote,
+} from "@/lib/services/lessonService";
+import { useAuth } from "@/lib/providers/auth-provider";
 
 interface UseLessonsReturn {
   lessons: Lesson[];
   loading: boolean;
   error: string | null;
-  addLesson: (lesson: Omit<Lesson, "id" | "createdAt">) => Promise<void>;
+  addLesson: (
+    lesson: Omit<Lesson, "id" | "createdAt" | "updatedAt">,
+  ) => Promise<void>;
   updateLesson: (
     id: number,
-    updates: Partial<Omit<Lesson, "id" | "createdAt">>,
+    updates: Partial<Omit<Lesson, "id" | "createdAt" | "updatedAt">>,
   ) => Promise<void>;
   deleteLesson: (id: number) => Promise<void>;
   refreshLessons: () => Promise<void>;
@@ -28,23 +37,37 @@ export function useLessons(): UseLessonsReturn {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { supabase, user, isLoading: authLoading } = useAuth();
 
   const loadLessons = useCallback(async () => {
+    if (authLoading) return;
+
+    if (!user) {
+      setLessons([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const loadedLessons = loadFromStorage();
-      setLessons(loadedLessons);
+      const remoteLessons = await fetchLessonsRemote(supabase, user.id);
+      setLessons(remoteLessons);
+      saveToStorage(remoteLessons);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load lessons";
       setError(errorMessage);
-      console.error("Error loading lessons from storage:", err);
-      setLessons([]);
+      const cached = loadFromStorage();
+      setLessons(cached);
+      console.error(
+        "Error loading lessons from Supabase, fell back to cache:",
+        err,
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authLoading, user, supabase]);
 
   const saveLessons = useCallback(async (lessonsToSave: Lesson[]) => {
     try {
@@ -67,16 +90,22 @@ export function useLessons(): UseLessonsReturn {
   }, [loadLessons]);
 
   const addLesson = useCallback(
-    async (lessonData: Omit<Lesson, "id" | "createdAt">) => {
+    async (lessonData: Omit<Lesson, "id" | "createdAt" | "updatedAt">) => {
+      if (!user) {
+        throw new Error("You must be logged in to add lessons");
+      }
+
       try {
         setError(null);
-        const newLesson: Lesson = {
+        const now = new Date().toISOString();
+        const createdLesson = await createLessonRemote(supabase, user.id, {
           ...lessonData,
-          id: Date.now(),
-          createdAt: new Date().toISOString(),
-        };
+          createdAt: now,
+          updatedAt: now,
+          userId: user.id,
+        });
 
-        const updatedLessons = [...lessons, newLesson];
+        const updatedLessons = [...lessons, createdLesson];
         await saveLessons(updatedLessons);
         setLessons(updatedLessons);
       } catch (err) {
@@ -86,11 +115,18 @@ export function useLessons(): UseLessonsReturn {
         throw err;
       }
     },
-    [lessons, saveLessons],
+    [lessons, supabase, user, saveLessons],
   );
 
   const updateLesson = useCallback(
-    async (id: number, updates: Partial<Omit<Lesson, "id" | "createdAt">>) => {
+    async (
+      id: number,
+      updates: Partial<Omit<Lesson, "id" | "createdAt" | "updatedAt">>,
+    ) => {
+      if (!user) {
+        throw new Error("You must be logged in to update lessons");
+      }
+
       try {
         setError(null);
         const index = lessons.findIndex((lesson) => lesson.id === id);
@@ -99,10 +135,11 @@ export function useLessons(): UseLessonsReturn {
           throw new Error(`Lesson with id ${id} not found`);
         }
 
-        const updatedLesson = {
-          ...lessons[index],
+        const updatedLesson = await updateLessonRemote(supabase, user.id, id, {
           ...updates,
-        };
+          updatedAt: new Date().toISOString(),
+          userId: user.id,
+        });
 
         const updatedLessons = [...lessons];
         updatedLessons[index] = updatedLesson;
@@ -116,19 +153,20 @@ export function useLessons(): UseLessonsReturn {
         throw err;
       }
     },
-    [lessons, saveLessons],
+    [lessons, supabase, user, saveLessons],
   );
 
   const deleteLesson = useCallback(
     async (id: number) => {
+      if (!user) {
+        throw new Error("You must be logged in to delete lessons");
+      }
+
       try {
         setError(null);
+        await removeLessonRemote(supabase, user.id, id);
+
         const filtered = lessons.filter((lesson) => lesson.id !== id);
-
-        if (filtered.length === lessons.length) {
-          throw new Error(`Lesson with id ${id} not found`);
-        }
-
         await saveLessons(filtered);
         setLessons(filtered);
       } catch (err) {
@@ -138,7 +176,7 @@ export function useLessons(): UseLessonsReturn {
         throw err;
       }
     },
-    [lessons, saveLessons],
+    [lessons, supabase, user, saveLessons],
   );
 
   return {

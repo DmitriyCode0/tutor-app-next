@@ -9,6 +9,7 @@ export interface Lesson {
   duration: number; // Duration of lesson in hours
   date: string; // Date of lesson in YYYY-MM-DD format
   createdAt: string; // ISO timestamp when lesson was created
+  updatedAt?: string; // ISO timestamp when lesson was last updated
   userId?: string; // Optional user ID for future backend integration
 }
 

@@ -9,7 +9,9 @@ import { StudentAutocomplete } from "@/components/StudentAutocomplete";
 import { Student } from "@/lib/types/student";
 
 interface LessonFormProps {
-  onSubmit: (lesson: Omit<Lesson, "id" | "createdAt">) => Promise<void>;
+  onSubmit: (
+    lesson: Omit<Lesson, "id" | "createdAt" | "updatedAt">,
+  ) => Promise<void>;
   onCancel?: () => void;
   initialData?: Partial<Lesson>;
   submitLabel?: string;

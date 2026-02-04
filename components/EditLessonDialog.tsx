@@ -20,7 +20,7 @@ type EditLessonDialogProps = {
   lesson: Lesson | null;
   onSave: (
     id: number,
-    updates: Partial<Omit<Lesson, "id" | "createdAt">>,
+    updates: Partial<Omit<Lesson, "id" | "createdAt" | "updatedAt">>,
   ) => Promise<void>;
 };
 

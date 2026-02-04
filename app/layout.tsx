@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserMenu } from "@/components/UserMenu";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-// import { AuthProvider } from "@/lib/providers/auth-provider";
+import { AuthProvider } from "@/lib/providers/auth-provider";
 const architectsDaughter = Architects_Daughter({
   variable: "--font-architects",
   subsets: ["latin"],
@@ -50,25 +51,30 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${architectsDaughter.variable} antialiased`}
       >
-        {/* <AuthProvider> */}
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
-                <SidebarTrigger className="-ml-1" />
-                <ThemeToggle />
-              </header>
-              {children}
-            </SidebarInset>
-          </SidebarProvider>
-        </ThemeProvider>
-        {/* </AuthProvider> */}
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
+                  <SidebarTrigger className="-ml-1" />
+                  <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <div className="hidden sm:block">
+                      <UserMenu />
+                    </div>
+                  </div>
+                </header>
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
