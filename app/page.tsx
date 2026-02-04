@@ -13,24 +13,6 @@ import { Lesson } from "@/lib/types/lesson";
 import { formatDateString } from "@/lib/utils/dateUtils";
 import { ProtectedPage } from "@/components/ProtectedPage";
 
-import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
-
-export default async function Page() {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-
-  const { data: todos } = await supabase.from("todos").select();
-
-  return (
-    <ul>
-      {todos?.map((todo) => (
-        <li>{todo}</li>
-      ))}
-    </ul>
-  );
-}
-
 export default function Home() {
   const { lessons, loading, error, addLesson, updateLesson, deleteLesson } =
     useLessons();
