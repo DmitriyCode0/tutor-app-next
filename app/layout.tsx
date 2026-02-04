@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 // import { AuthProvider } from "@/lib/providers/auth-provider";
 const architectsDaughter = Architects_Daughter({
   variable: "--font-architects",
