@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -70,20 +69,7 @@ export default function StudentsPage() {
             </p>
           </CardContent>
         </Card>
-        <div className="flex items-center gap-2">
-          <div className="flex gap-2 flex-col sm:flex-row">
-            <Link href="/lessons">
-              <Button variant="outline" size="lg" className="w-full lg:w-auto">
-                View Lessons
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" size="lg" className="w-full lg:w-auto">
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <div className="flex items-center gap-2"></div>
       </div>
 
       {error && (

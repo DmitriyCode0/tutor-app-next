@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Architects_Daughter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/providers/theme-provider";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 // import { AuthProvider } from "@/lib/providers/auth-provider";
 const architectsDaughter = Architects_Daughter({
   variable: "--font-architects",
@@ -49,7 +56,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+                <ThemeToggle />
+              </header>
+              {children}
+            </SidebarInset>
+          </SidebarProvider>
         </ThemeProvider>
         {/* </AuthProvider> */}
       </body>

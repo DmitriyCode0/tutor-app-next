@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -83,23 +82,14 @@ export default function LessonsPage() {
             View all lessons organized by student folders
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/">
-            <Button variant="outline">Dashboard</Button>
-          </Link>
-          <Link href="/students">
-            <Button variant="outline">Manage Students</Button>
-          </Link>
-        </div>
+        <div className="flex gap-2"></div>
       </div>
 
       {students.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground mb-4">No students found.</p>
-            <Link href="/students">
-              <Button>Add Your First Student</Button>
-            </Link>
+            <Button>Add Your First Student</Button>
           </CardContent>
         </Card>
       ) : (
