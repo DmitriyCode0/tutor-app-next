@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Student } from "@/lib/types/student";
+import { useAuth } from "@/lib/providers/auth-provider";
+import { useEffect } from "react";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 
 interface StudentFormProps {
   onSubmit: (
@@ -30,6 +33,22 @@ export function StudentForm({
   const [notes, setNotes] = useState(initialData?.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState<string>("UAH");
+
+  useEffect(() => {
+    const meta = (user as any)?.user_metadata || {};
+    const saved =
+      meta.currency ||
+      (() => {
+        try {
+          return localStorage.getItem("tutor_currency") ?? "UAH";
+        } catch {
+          return "UAH";
+        }
+      })();
+    setCurrency(saved);
+  }, [user]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -111,7 +130,8 @@ export function StudentForm({
               htmlFor="hourlyRate"
               className="text-sm font-semibold text-foreground"
             >
-              Hourly Rate (₴) <span className="text-destructive">*</span>
+              Hourly Rate ({getCurrencySymbol(currency)}){" "}
+              <span className="text-destructive">*</span>
             </label>
             <Input
               id="hourlyRate"

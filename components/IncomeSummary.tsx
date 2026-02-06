@@ -16,6 +16,11 @@ import {
   getCurrentMonthIncomeBreakdown,
 } from "@/lib/utils/incomeUtils";
 import { formatDateRange } from "@/lib/utils/dateUtils";
+import { useAuth } from "@/lib/providers/auth-provider";
+import {
+  formatCurrency as formatCurrencyUtil,
+  getCurrencySymbol,
+} from "@/lib/utils/currency";
 
 interface IncomeSummaryProps {
   lessons: Lesson[];
@@ -108,9 +113,25 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
     100,
   );
 
-  const formatCurrency = (amount: number): string => {
-    return `₴${amount.toFixed(2)}`;
-  };
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState<string>("UAH");
+
+  useEffect(() => {
+    const meta = (user as any)?.user_metadata || {};
+    const saved =
+      meta.currency ||
+      (() => {
+        try {
+          return localStorage.getItem("tutor_currency") ?? "UAH";
+        } catch {
+          return "UAH";
+        }
+      })();
+    setCurrency(saved);
+  }, [user]);
+
+  const formatCurrency = (amount: number) =>
+    formatCurrencyUtil(amount, currency);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

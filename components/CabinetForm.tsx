@@ -16,6 +16,14 @@ export function CabinetForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<string>("UAH");
+
+  useEffect(() => {
+    // read currency from user metadata or localStorage
+    const meta = (user as any)?.user_metadata || {};
+    const saved = meta.currency || localStorage.getItem("tutor_currency");
+    if (saved) setCurrency(saved);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -53,12 +61,22 @@ export function CabinetForm() {
         return;
       }
 
+      // include currency preference in user metadata
+      updates.data = { ...(updates.data ?? {}), currency };
+
       const { data, error: updateError } =
         await supabase.auth.updateUser(updates);
 
       if (updateError) {
         setError(updateError.message);
         return;
+      }
+
+      // Persist currency to local cache so client components can read immediately
+      try {
+        localStorage.setItem("tutor_currency", currency);
+      } catch (e) {
+        // ignore
       }
 
       // On success, inform user about email confirmation if needed
@@ -75,6 +93,9 @@ export function CabinetForm() {
       // Clear password fields
       setPassword("");
       setConfirmPassword("");
+
+      // Reload to make sure the AuthProvider picks up updated metadata
+      window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -115,6 +136,23 @@ export function CabinetForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+          </div>
+
+          <div>
+            <Label htmlFor="currency">Preferred currency</Label>
+            <select
+              id="currency"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+            >
+              <option value="UAH">UAH — ₴</option>
+              <option value="EUR">EUR — €</option>
+              <option value="USD">USD — $</option>
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              This will change currency symbols throughout the app.
+            </p>
           </div>
 
           <div>

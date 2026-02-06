@@ -59,18 +59,7 @@ export default function StudentsPage() {
     <ProtectedPage>
       <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
-          <Card className="flex-1 max-w-2xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold font-architects">
-                Student Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-muted-foreground leading-relaxed">
-                Manage your students and their default hourly rates.
-              </p>
-            </CardContent>
-          </Card>
+          <h1 className="text-3xl font-bold font-architects">Students</h1>
           <div className="flex items-center gap-2"></div>
         </div>
 

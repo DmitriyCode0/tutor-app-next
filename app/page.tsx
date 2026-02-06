@@ -6,40 +6,28 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LessonForm } from "@/components/LessonForm";
-import { LessonList } from "@/components/LessonList";
+import { LessonCard } from "@/components/LessonCard";
 import { IncomeSummary } from "@/components/IncomeSummary";
 import { useLessons } from "@/lib/hooks/useLessons";
 import { Lesson } from "@/lib/types/lesson";
-import { formatDateString } from "@/lib/utils/dateUtils";
+import { formatDateString, formatDisplayDate } from "@/lib/utils/dateUtils";
+
 import { ProtectedPage } from "@/components/ProtectedPage";
 
 export default function Home() {
   const { lessons, loading, error, addLesson, updateLesson, deleteLesson } =
     useLessons();
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
 
   const handleSubmit = async (
     lessonData: Omit<Lesson, "id" | "createdAt" | "updatedAt">,
   ) => {
     try {
-      if (editingLesson) {
-        await updateLesson(editingLesson.id, lessonData);
-        setEditingLesson(null);
-      } else {
-        await addLesson(lessonData);
-      }
+      // Creation via top form. Updates are handled by LessonCard's dialog.
+      await addLesson(lessonData);
     } catch (error) {
       console.error("Failed to save lesson:", error);
       throw error;
     }
-  };
-
-  const handleEdit = (lesson: Lesson) => {
-    setEditingLesson(lesson);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingLesson(null);
   };
 
   if (loading) {
@@ -138,12 +126,7 @@ export default function Home() {
   return (
     <ProtectedPage>
       <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
-        <LessonForm
-          onSubmit={handleSubmit}
-          onCancel={editingLesson ? handleCancelEdit : undefined}
-          initialData={editingLesson || undefined}
-          submitLabel={editingLesson ? "Update Lesson" : "Add Lesson"}
-        />
+        <LessonForm onSubmit={handleSubmit} submitLabel="Add Lesson" />
 
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -158,11 +141,25 @@ export default function Home() {
         <Separator className="my-10" />
 
         <h2 className="text-lg font-medium mb-4">Today&apos;s lessons</h2>
-        <LessonList
-          lessons={todaysLessons}
-          onDelete={deleteLesson}
-          onEdit={handleEdit}
-        />
+
+        {todaysLessons.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <p className="text-muted-foreground">No lessons for today.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {todaysLessons.map((lesson) => (
+              <LessonCard
+                key={lesson.id}
+                lesson={lesson}
+                onUpdate={updateLesson}
+                onDeleteConfirmed={deleteLesson}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </ProtectedPage>
   );

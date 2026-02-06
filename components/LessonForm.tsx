@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Lesson } from "@/lib/types/lesson";
 import { StudentAutocomplete } from "@/components/StudentAutocomplete";
 import { Student } from "@/lib/types/student";
+import { useAuth } from "@/lib/providers/auth-provider";
+import { useEffect } from "react";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 
 interface LessonFormProps {
   onSubmit: (
@@ -41,6 +44,22 @@ export function LessonForm({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState<string>("UAH");
+
+  useEffect(() => {
+    const meta = (user as any)?.user_metadata || {};
+    const saved =
+      meta.currency ||
+      (() => {
+        try {
+          return localStorage.getItem("tutor_currency") ?? "UAH";
+        } catch {
+          return "UAH";
+        }
+      })();
+    setCurrency(saved);
+  }, [user]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -138,7 +157,7 @@ export function LessonForm({
                 htmlFor="hourlyRate"
                 className="text-sm font-semibold text-foreground"
               >
-                Hourly Rate (₴)
+                Hourly Rate ({getCurrencySymbol(currency)})
               </label>
               <Input
                 id="hourlyRate"

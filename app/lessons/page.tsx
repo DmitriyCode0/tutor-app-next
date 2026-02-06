@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { LessonCard } from "@/components/LessonCard";
 import {
   Select,
   SelectContent,
@@ -15,24 +14,11 @@ import {
 import { ChevronLeft, ChevronRight, Trash2, Edit2 } from "lucide-react";
 import { useLessons } from "@/lib/hooks/useLessons";
 import { useStudents } from "@/lib/hooks/useStudents";
-import { Lesson } from "@/lib/types/lesson";
-import { Student } from "@/lib/types/student";
 import {
   getWeekRange,
   isDateInRange,
   formatDateRange,
 } from "@/lib/utils/dateUtils";
-import { EditLessonDialog } from "@/components/EditLessonDialog";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
 
 export default function LessonsPage() {
   const {
@@ -50,8 +36,6 @@ export default function LessonsPage() {
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [sortBy, setSortBy] = useState<"date" | "student">("date");
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
 
   const currentDate = new Date();
   const baseDate = new Date(currentDate);
@@ -70,33 +54,6 @@ export default function LessonsPage() {
         return a.studentName.localeCompare(b.studentName);
       }
     });
-
-  const formatCurrency = (amount: number): string => {
-    return `₴${amount.toFixed(2)}`;
-  };
-
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const promptDelete = (lesson: Lesson) => {
-    setDeleteTarget(lesson);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      await deleteLesson(deleteTarget.id);
-      setDeleteTarget(null);
-    } catch (error) {
-      console.error("Failed to delete lesson:", error);
-      alert("Failed to delete lesson. Please try again.");
-    }
-  };
 
   if (lessonsLoading || studentsLoading) {
     return (
@@ -192,105 +149,17 @@ export default function LessonsPage() {
       ) : (
         <div className="space-y-3">
           {filteredLessons.map((lesson) => {
-            const student = students.find((s) => s.name === lesson.studentName);
-            const income = lesson.hourlyRate * lesson.duration;
-
             return (
-              <Card
+              <LessonCard
                 key={lesson.id}
-                className="transition-shadow hover:shadow-md"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg">
-                          {lesson.studentName}
-                        </h3>
-                        <Badge variant="secondary">
-                          {formatDate(lesson.date)}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p>
-                          {lesson.duration} hour
-                          {lesson.duration !== 1 ? "s" : ""} ×{" "}
-                          {formatCurrency(lesson.hourlyRate)}/hour
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-3">
-                      <div className="text-right">
-                        <div className="text-xl font-bold">
-                          {formatCurrency(income)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {lesson.studentName}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingLesson(lesson)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeleteTarget(lesson)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                lesson={lesson}
+                onUpdate={updateLesson}
+                onDeleteConfirmed={deleteLesson}
+              />
             );
           })}
         </div>
       )}
-
-      {/* Delete confirmation dialog */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the lesson for{" "}
-              {deleteTarget?.studentName} on{" "}
-              {deleteTarget ? formatDate(deleteTarget.date) : ""}? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Edit dialog */}
-      <EditLessonDialog
-        open={!!editingLesson}
-        onOpenChange={(open) => {
-          if (!open) setEditingLesson(null);
-        }}
-        lesson={editingLesson}
-        onSave={async (id, updates) => {
-          await updateLesson(id, updates);
-          setEditingLesson(null);
-        }}
-      />
     </main>
   );
 }

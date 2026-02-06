@@ -15,14 +15,14 @@ export function getWeekRange(date: Date): { start: Date; end: Date } {
   const dayOfWeek = day === 0 ? 7 : day;
   // Calculate days to subtract to get to Monday
   const diff = d.getDate() - dayOfWeek + 1;
-  
+
   const start = new Date(d.setDate(diff));
   start.setHours(0, 0, 0, 0);
-  
+
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   end.setHours(23, 59, 59, 999);
-  
+
   return { start, end };
 }
 
@@ -34,10 +34,10 @@ export function getWeekRange(date: Date): { start: Date; end: Date } {
 export function getMonthRange(date: Date): { start: Date; end: Date } {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
   start.setHours(0, 0, 0, 0);
-  
+
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
   end.setHours(23, 59, 59, 999);
-  
+
   return { start, end };
 }
 
@@ -51,13 +51,13 @@ export function getMonthRange(date: Date): { start: Date; end: Date } {
 export function isDateInRange(date: Date, start: Date, end: Date): boolean {
   const checkDate = new Date(date);
   checkDate.setHours(0, 0, 0, 0);
-  
+
   const rangeStart = new Date(start);
   rangeStart.setHours(0, 0, 0, 0);
-  
+
   const rangeEnd = new Date(end);
   rangeEnd.setHours(23, 59, 59, 999);
-  
+
   return checkDate >= rangeStart && checkDate <= rangeEnd;
 }
 
@@ -73,15 +73,15 @@ export function formatDateRange(start: Date, end: Date): string {
   const endMonth = end.toLocaleDateString("en-US", { month: "short" });
   const endDay = end.getDate();
   const year = start.getFullYear();
-  
+
   if (startMonth === endMonth && start.getFullYear() === end.getFullYear()) {
     return `${startMonth} ${startDay} - ${endDay}, ${year}`;
   }
-  
+
   if (start.getFullYear() === end.getFullYear()) {
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
   }
-  
+
   return `${startMonth} ${startDay}, ${start.getFullYear()} - ${endMonth} ${endDay}, ${end.getFullYear()}`;
 }
 
@@ -128,4 +128,18 @@ export function getMonthKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
+}
+
+/**
+ * Format a date or date string for display (e.g., "Feb 6, 2026")
+ * Accepts either a Date instance or an ISO/ YYYY-MM-DD date string
+ */
+export function formatDisplayDate(dateInput: string | Date): string {
+  const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Student } from "@/lib/types/student";
 import { useStudents } from "@/lib/hooks/useStudents";
+import { useAuth } from "@/lib/providers/auth-provider";
+import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
 
 interface StudentAutocompleteProps {
   value: string;
@@ -29,6 +31,23 @@ export function StudentAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState<string>("UAH");
+
+  useEffect(() => {
+    const meta = (user as any)?.user_metadata || {};
+    const saved =
+      meta.currency ||
+      (() => {
+        try {
+          return localStorage.getItem("tutor_currency") ?? "UAH";
+        } catch {
+          return "UAH";
+        }
+      })();
+    setCurrency(saved);
+  }, [user]);
+
   // Filter students based on input value
   useEffect(() => {
     if (!value.trim()) {
@@ -38,12 +57,12 @@ export function StudentAutocomplete({
     }
 
     const normalizedValue = value.toLowerCase().trim();
-    
+
     // Check if value exactly matches a student name (case-insensitive)
     const exactMatch = students.find(
-      (student) => student.name.toLowerCase().trim() === normalizedValue
+      (student) => student.name.toLowerCase().trim() === normalizedValue,
     );
-    
+
     // If exact match exists, don't show suggestions
     if (exactMatch) {
       setSuggestions([]);
@@ -51,10 +70,17 @@ export function StudentAutocomplete({
       return;
     }
 
-    // Otherwise, show filtered suggestions
-    const filtered = students.filter((student) =>
-      student.name.toLowerCase().includes(normalizedValue)
-    );
+    // Try to parse a numeric amount from the input (e.g., "₴400", "$400", "400")
+    const digitsOnly = normalizedValue.replace(/[^0-9.]/g, "");
+    const amount = digitsOnly ? parseFloat(digitsOnly) : NaN;
+
+    // Otherwise, show filtered suggestions by name or matching hourly rate
+    const filtered = students.filter((student) => {
+      const nameMatch = student.name.toLowerCase().includes(normalizedValue);
+      const amountMatch =
+        !isNaN(amount) && Math.abs(student.hourlyRate - amount) < 0.01;
+      return nameMatch || amountMatch;
+    });
 
     setSuggestions(filtered);
     setShowSuggestions(filtered.length > 0);
@@ -96,7 +122,7 @@ export function StudentAutocomplete({
       if (e.key === "Enter" && value.trim()) {
         // Try to find exact match
         const exactMatch = students.find(
-          (s) => s.name.toLowerCase() === value.trim().toLowerCase()
+          (s) => s.name.toLowerCase() === value.trim().toLowerCase(),
         );
         if (exactMatch) {
           handleSelect(exactMatch);
@@ -109,7 +135,7 @@ export function StudentAutocomplete({
       case "ArrowDown":
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
+          prev < suggestions.length - 1 ? prev + 1 : prev,
         );
         break;
       case "ArrowUp":
@@ -163,7 +189,7 @@ export function StudentAutocomplete({
             >
               <div className="font-medium">{student.name}</div>
               <div className="text-sm text-muted-foreground">
-                ₴{student.hourlyRate}/hr
+                {formatCurrencyUtil(student.hourlyRate, currency)}/hr
               </div>
             </div>
           ))}

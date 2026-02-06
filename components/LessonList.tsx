@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,47 +10,50 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/lib/providers/auth-provider";
+import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
+
 import { Lesson } from "@/lib/types/lesson";
 import { calculateLessonIncome } from "@/lib/utils/incomeUtils";
 import { parseDateString } from "@/lib/utils/dateUtils";
+import { LessonCard } from "@/components/LessonCard";
 
 interface LessonListProps {
   lessons: Lesson[];
   onDelete: (id: number) => Promise<void>;
   onEdit?: (lesson: Lesson) => void;
+  onUpdate?: (
+    id: number,
+    updates: Partial<Omit<Lesson, "id" | "createdAt" | "updatedAt">>,
+  ) => Promise<void>;
+  onDeleteConfirmed?: (id: number) => Promise<void>;
 }
 
-export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
+export function LessonList({
+  lessons,
+  onDelete,
+  onEdit,
+  onUpdate,
+}: LessonListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
 
-  const promptDelete = (lesson: Lesson) => {
-    setDeleteTarget(lesson);
-  };
+  // currency preference: read from auth metadata or localStorage
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState<string>("UAH");
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      setDeletingId(deleteTarget.id);
-      await onDelete(deleteTarget.id);
-      setDeleteTarget(null);
-    } catch (error) {
-      console.error("Failed to delete lesson:", error);
-      alert("Failed to delete lesson. Please try again.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  useEffect(() => {
+    const meta = (user as any)?.user_metadata || {};
+    const saved =
+      meta.currency ||
+      (() => {
+        try {
+          return localStorage.getItem("tutor_currency") ?? "UAH";
+        } catch {
+          return "UAH";
+        }
+      })();
+    setCurrency(saved);
+  }, [user]);
 
   const formatDisplayDate = (dateString: string): string => {
     try {
@@ -111,109 +114,23 @@ export function LessonList({ lessons, onDelete, onEdit }: LessonListProps) {
         <TooltipProvider>
           <div className="space-y-4">
             {sortedLessons.map((lesson) => {
-              const income = calculateLessonIncome(lesson);
               const isDeleting = deletingId === lesson.id;
-              const isRecent = isRecentLesson(lesson.date);
 
               return (
-                <div
+                <LessonCard
                   key={lesson.id}
-                  className="flex items-center justify-between p-6 border rounded-xl hover:bg-accent/30 hover:border-accent transition-all duration-200 hover:shadow-sm"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-semibold text-base truncate">
-                        {lesson.studentName}
-                      </span>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDisplayDate(lesson.date)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6 ml-4">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-right cursor-help group">
-                          <div className="font-bold text-lg text-primary group-hover:scale-105 transition-transform">
-                            ₴{income.toFixed(2)}
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="font-medium">
-                        <p>
-                          ₴{lesson.hourlyRate} × {lesson.duration} hours
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <div className="flex gap-3">
-                      {onEdit && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onEdit(lesson)}
-                              disabled={isDeleting}
-                              className="h-9 px-4 hover:bg-accent hover:border-accent-foreground/20"
-                            >
-                              Edit
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit this lesson</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => promptDelete(lesson)}
-                            disabled={isDeleting}
-                            className="h-9 px-4 hover:bg-destructive/90"
-                          >
-                            Delete
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Delete this lesson</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </div>
+                  lesson={lesson}
+                  compact
+                  className="border rounded-xl"
+                  onEdit={(l) => onEdit && onEdit(l)}
+                  onUpdate={onUpdate}
+                  onDeleteConfirmed={onDelete}
+                />
               );
             })}
           </div>
         </TooltipProvider>
       </CardContent>
-
-      {/* Delete confirmation dialog */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the lesson for{" "}
-              {deleteTarget?.studentName} on{" "}
-              {deleteTarget ? formatDisplayDate(deleteTarget.date) : ""}? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Card>
   );
 }
