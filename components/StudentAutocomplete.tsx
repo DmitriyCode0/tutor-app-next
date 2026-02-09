@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Student } from "@/lib/types/student";
 import { useStudents } from "@/lib/hooks/useStudents";
-import { useAuth } from "@/lib/providers/auth-provider";
 import { useRole } from "@/lib/providers/role-provider";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
+import { useCurrency } from "@/lib/hooks/useCurrency";
 
 interface StudentAutocompleteProps {
   value: string;
@@ -27,28 +27,12 @@ export function StudentAutocomplete({
 }: StudentAutocompleteProps) {
   const { t } = useRole();
   const { students } = useStudents();
+  const currency = useCurrency();
   const [suggestions, setSuggestions] = useState<Student[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const { user } = useAuth();
-  const [currency, setCurrency] = useState<string>("UAH");
-
-  useEffect(() => {
-    const meta = (user as any)?.user_metadata || {};
-    const saved =
-      meta.currency ||
-      (() => {
-        try {
-          return localStorage.getItem("tutor_currency") ?? "UAH";
-        } catch {
-          return "UAH";
-        }
-      })();
-    setCurrency(saved);
-  }, [user]);
 
   // Filter students based on input value
   useEffect(() => {

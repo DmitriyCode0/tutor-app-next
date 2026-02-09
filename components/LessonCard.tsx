@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { Lesson } from "@/lib/types/lesson";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
-import { useAuth } from "@/lib/providers/auth-provider";
 import { useRole } from "@/lib/providers/role-provider";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
+import { useCurrency } from "@/lib/hooks/useCurrency";
 import { EditLessonDialog } from "@/components/EditLessonDialog";
 import {
   AlertDialog,
@@ -45,26 +45,11 @@ export function LessonCard({
   className = "",
 }: LessonCardProps) {
   const { t } = useRole();
-  const { user } = useAuth();
-  const [currency, setCurrency] = useState<string>("UAH");
+  const currency = useCurrency();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    const meta = (user as any)?.user_metadata || {};
-    const saved =
-      meta.currency ||
-      (() => {
-        try {
-          return localStorage.getItem("tutor_currency") ?? "UAH";
-        } catch {
-          return "UAH";
-        }
-      })();
-    setCurrency(saved);
-  }, [user]);
 
   const income = lesson.hourlyRate * lesson.duration;
 

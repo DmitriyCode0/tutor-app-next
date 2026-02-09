@@ -10,6 +10,7 @@ import { useStudents } from "@/lib/hooks/useStudents";
 import { Student } from "@/lib/types/student";
 import { ProtectedPage } from "@/components/ProtectedPage";
 import { useRole } from "@/lib/providers/role-provider";
+import { LoadingCard } from "@/components/LoadingCard";
 
 export default function StudentsPage() {
   const { t } = useRole();
@@ -47,11 +48,7 @@ export default function StudentsPage() {
     return (
       <ProtectedPage>
         <main className="container mx-auto p-4 md:p-10">
-          <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">Loading {t.students}...</p>
-            </CardContent>
-          </Card>
+          <LoadingCard message={`Loading ${t.students}...`} />
         </main>
       </ProtectedPage>
     );

@@ -16,8 +16,8 @@ import {
   getCurrentMonthIncomeBreakdown,
 } from "@/lib/utils/incomeUtils";
 import { formatDateRange } from "@/lib/utils/dateUtils";
-import { useAuth } from "@/lib/providers/auth-provider";
 import { useRole } from "@/lib/providers/role-provider";
+import { useCurrency } from "@/lib/hooks/useCurrency";
 import {
   formatCurrency as formatCurrencyUtil,
   getCurrencySymbol,
@@ -31,6 +31,7 @@ const MONTHLY_GOAL_KEY = "tutor_monthly_goal";
 
 export function IncomeSummary({ lessons }: IncomeSummaryProps) {
   const { t } = useRole();
+  const currency = useCurrency();
   const [monthlyGoal, setMonthlyGoal] = useState<number>(2000);
   const [goalInput, setGoalInput] = useState<string>("2000");
   const [weekOffset, setWeekOffset] = useState<number>(0);
@@ -114,23 +115,6 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
     (currentMonthIncome / monthlyGoal) * 100,
     100,
   );
-
-  const { user } = useAuth();
-  const [currency, setCurrency] = useState<string>("UAH");
-
-  useEffect(() => {
-    const meta = (user as any)?.user_metadata || {};
-    const saved =
-      meta.currency ||
-      (() => {
-        try {
-          return localStorage.getItem("tutor_currency") ?? "UAH";
-        } catch {
-          return "UAH";
-        }
-      })();
-    setCurrency(saved);
-  }, [user]);
 
   const formatCurrency = (amount: number) =>
     formatCurrencyUtil(amount, currency);

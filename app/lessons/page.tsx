@@ -20,6 +20,8 @@ import {
   formatDateRange,
 } from "@/lib/utils/dateUtils";
 import { useRole } from "@/lib/providers/role-provider";
+import { LoadingCard } from "@/components/LoadingCard";
+import { ErrorCard } from "@/components/ErrorCard";
 
 export default function LessonsPage() {
   const { t } = useRole();
@@ -60,11 +62,7 @@ export default function LessonsPage() {
   if (lessonsLoading || studentsLoading) {
     return (
       <main className="container mx-auto p-4 md:p-10">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Loading {t.lessons}...</p>
-          </CardContent>
-        </Card>
+        <LoadingCard message={`Loading ${t.lessons}...`} />
       </main>
     );
   }
@@ -72,13 +70,9 @@ export default function LessonsPage() {
   if (lessonsError || studentsError) {
     return (
       <main className="container mx-auto p-4 md:p-10">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-destructive">
-              Error: {lessonsError || studentsError}
-            </p>
-          </CardContent>
-        </Card>
+        <ErrorCard
+          error={lessonsError || studentsError || "An error occurred"}
+        />
       </main>
     );
   }

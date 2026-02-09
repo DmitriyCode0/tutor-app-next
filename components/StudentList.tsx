@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -16,6 +15,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Student } from "@/lib/types/student";
 import { useRole } from "@/lib/providers/role-provider";
+import { useLessons } from "@/lib/hooks/useLessons";
+import { StudentCard } from "@/components/StudentCard";
 
 interface StudentListProps {
   students: Student[];
@@ -25,9 +26,19 @@ interface StudentListProps {
 
 export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
   const { t } = useRole();
+  const { lessons } = useLessons();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
+
+  const lessonCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    lessons.forEach((lesson) => {
+      const key = lesson.studentName.trim().toLowerCase();
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return counts;
+  }, [lessons]);
 
   const promptDelete = (student: Student) => {
     setDeleteTarget(student);
@@ -106,50 +117,18 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
           <div className="space-y-4">
             {sortedStudents.map((student) => {
               const isDeleting = deletingId === student.id;
+              const lessonCount =
+                lessonCounts.get(student.name.trim().toLowerCase()) ?? 0;
 
               return (
-                <div
+                <StudentCard
                   key={student.id}
-                  className="flex items-center justify-between p-6 border rounded-xl hover:bg-accent/30 hover:border-accent transition-all duration-200 hover:shadow-sm"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-base mb-2">
-                      {student.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-1">
-                      ₴{student.hourlyRate}/hr
-                      {student.email && ` • ${student.email}`}
-                      {student.phone && ` • ${student.phone}`}
-                    </div>
-                    {student.notes && (
-                      <div className="text-sm text-muted-foreground">
-                        {student.notes}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-3 ml-4">
-                    {onEdit && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEdit(student)}
-                        disabled={isDeleting}
-                        className="h-9 px-4 hover:bg-accent hover:border-accent-foreground/20"
-                      >
-                        Edit
-                      </Button>
-                    )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => promptDelete(student)}
-                      disabled={isDeleting}
-                      className="h-9 px-4 hover:bg-destructive/90"
-                    >
-                      {isDeleting ? "Deleting..." : "Delete"}
-                    </Button>
-                  </div>
-                </div>
+                  student={student}
+                  lessonCount={lessonCount}
+                  onEdit={onEdit}
+                  onDelete={promptDelete}
+                  isDeleting={isDeleting}
+                />
               );
             })}
           </div>

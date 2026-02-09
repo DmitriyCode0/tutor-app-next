@@ -10,9 +10,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAuth } from "@/lib/providers/auth-provider";
 import { useRole } from "@/lib/providers/role-provider";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
+import { useCurrency } from "@/lib/hooks/useCurrency";
 
 import { Lesson } from "@/lib/types/lesson";
 import { calculateLessonIncome } from "@/lib/utils/incomeUtils";
@@ -37,25 +37,8 @@ export function LessonList({
   onUpdate,
 }: LessonListProps) {
   const { t } = useRole();
+  const currency = useCurrency();
   const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  // currency preference: read from auth metadata or localStorage
-  const { user } = useAuth();
-  const [currency, setCurrency] = useState<string>("UAH");
-
-  useEffect(() => {
-    const meta = (user as any)?.user_metadata || {};
-    const saved =
-      meta.currency ||
-      (() => {
-        try {
-          return localStorage.getItem("tutor_currency") ?? "UAH";
-        } catch {
-          return "UAH";
-        }
-      })();
-    setCurrency(saved);
-  }, [user]);
 
   const formatDisplayDate = (dateString: string): string => {
     try {

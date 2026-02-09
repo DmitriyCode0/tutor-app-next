@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Lesson } from "@/lib/types/lesson";
 import { StudentAutocomplete } from "@/components/StudentAutocomplete";
 import { Student } from "@/lib/types/student";
-import { useAuth } from "@/lib/providers/auth-provider";
 import { useRole } from "@/lib/providers/role-provider";
-import { useEffect } from "react";
 import { getCurrencySymbol } from "@/lib/utils/currency";
+import { useCurrency } from "@/lib/hooks/useCurrency";
+import { getTodayDateString } from "@/lib/utils/validation";
 
 interface LessonFormProps {
   onSubmit: (
@@ -36,32 +36,11 @@ export function LessonForm({
   const [duration, setDuration] = useState(
     initialData?.duration?.toString() || "1",
   );
-  const [date, setDate] = useState(
-    initialData?.date ||
-      (() => {
-        const today = new Date();
-        return today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-      })(),
-  );
+  const [date, setDate] = useState(initialData?.date || getTodayDateString());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
   const { t } = useRole();
-  const [currency, setCurrency] = useState<string>("UAH");
-
-  useEffect(() => {
-    const meta = (user as any)?.user_metadata || {};
-    const saved =
-      meta.currency ||
-      (() => {
-        try {
-          return localStorage.getItem("tutor_currency") ?? "UAH";
-        } catch {
-          return "UAH";
-        }
-      })();
-    setCurrency(saved);
-  }, [user]);
+  const currency = useCurrency();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -102,10 +81,7 @@ export function LessonForm({
         setStudentName("");
         setHourlyRate("");
         setDuration("1");
-        setDate(() => {
-          const today = new Date();
-          return today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-        });
+        setDate(getTodayDateString());
       }
     } catch (err) {
       const errorMessage =
@@ -148,10 +124,10 @@ export function LessonForm({
                 }
               }}
               onSelect={(student: Student) => {
-                // Auto-fill hourly rate when student is selected
                 setHourlyRate(student.hourlyRate.toString());
               }}
               placeholder={`Enter ${t.student} name`}
+              className="h-11"
             />
           </div>
 

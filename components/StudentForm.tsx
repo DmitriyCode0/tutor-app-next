@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Student } from "@/lib/types/student";
-import { useAuth } from "@/lib/providers/auth-provider";
 import { useRole } from "@/lib/providers/role-provider";
-import { useEffect } from "react";
 import { getCurrencySymbol } from "@/lib/utils/currency";
+import { useCurrency } from "@/lib/hooks/useCurrency";
 
 interface StudentFormProps {
   onSubmit: (
@@ -34,23 +33,8 @@ export function StudentForm({
   const [notes, setNotes] = useState(initialData?.notes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
   const { t } = useRole();
-  const [currency, setCurrency] = useState<string>("UAH");
-
-  useEffect(() => {
-    const meta = (user as any)?.user_metadata || {};
-    const saved =
-      meta.currency ||
-      (() => {
-        try {
-          return localStorage.getItem("tutor_currency") ?? "UAH";
-        } catch {
-          return "UAH";
-        }
-      })();
-    setCurrency(saved);
-  }, [user]);
+  const currency = useCurrency();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
