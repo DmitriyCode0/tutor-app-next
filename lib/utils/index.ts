@@ -20,5 +20,5 @@ export * from "./validation";
 // Error handling utilities
 export * from "./errorHandling";
 
-// General utilities (from utils.ts)
-export * from "./utils";
+// General utilities (from lib/utils.ts)
+export * from "../utils";
