@@ -12,33 +12,35 @@ import {
 import { Home, Users, BookOpen, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const items = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Students",
-    url: "/students",
-    icon: Users,
-  },
-  {
-    title: "Lessons",
-    url: "/lessons",
-    icon: BookOpen,
-  },
-  {
-    title: "Cabinet",
-    url: "/cabinet",
-    icon: User,
-  },
-];
+import { useRole } from "@/lib/providers/role-provider";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
+  const { t } = useRole();
+
+  const items = [
+    {
+      title: "Dashboard",
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: t.Students,
+      url: "/students",
+      icon: Users,
+    },
+    {
+      title: t.Lessons,
+      url: "/lessons",
+      icon: BookOpen,
+    },
+    {
+      title: "Cabinet",
+      url: "/cabinet",
+      icon: User,
+    },
+  ];
 
   const handleNavigation = () => {
     if (isMobile) {

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Student } from "@/lib/types/student";
 import { useStudents } from "@/lib/hooks/useStudents";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole } from "@/lib/providers/role-provider";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
 
 interface StudentAutocompleteProps {
@@ -20,10 +21,11 @@ export function StudentAutocomplete({
   value,
   onChange,
   onSelect,
-  placeholder = "Enter student name",
+  placeholder,
   className,
   disabled,
 }: StudentAutocompleteProps) {
+  const { t } = useRole();
   const { students } = useStudents();
   const [suggestions, setSuggestions] = useState<Student[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -168,7 +170,7 @@ export function StudentAutocomplete({
             setShowSuggestions(true);
           }
         }}
-        placeholder={placeholder}
+        placeholder={placeholder || `Enter ${t.student} name`}
         className={className}
         disabled={disabled}
         autoComplete="off"

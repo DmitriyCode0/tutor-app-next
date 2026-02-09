@@ -19,8 +19,10 @@ import {
   isDateInRange,
   formatDateRange,
 } from "@/lib/utils/dateUtils";
+import { useRole } from "@/lib/providers/role-provider";
 
 export default function LessonsPage() {
+  const { t } = useRole();
   const {
     lessons,
     loading: lessonsLoading,
@@ -60,7 +62,7 @@ export default function LessonsPage() {
       <main className="container mx-auto p-4 md:p-10">
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Loading lessons...</p>
+            <p className="text-muted-foreground">Loading {t.lessons}...</p>
           </CardContent>
         </Card>
       </main>
@@ -84,7 +86,9 @@ export default function LessonsPage() {
   return (
     <main className="container mx-auto p-4 md:p-10 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold font-architects">Weekly Lessons</h1>
+        <h1 className="text-3xl font-bold font-architects">
+          Weekly {t.Lessons}
+        </h1>
         <p className="text-muted-foreground mt-2">
           {formatDateRange(start, end)}
         </p>
@@ -132,7 +136,7 @@ export default function LessonsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="date">Sort by Date</SelectItem>
-                <SelectItem value="student">Sort by Student</SelectItem>
+                <SelectItem value="student">Sort by {t.Student}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -143,7 +147,9 @@ export default function LessonsPage() {
       {filteredLessons.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">No lessons for this week.</p>
+            <p className="text-muted-foreground">
+              No {t.lessons} for this week.
+            </p>
           </CardContent>
         </Card>
       ) : (

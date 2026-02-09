@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole, RoleType } from "@/lib/providers/role-provider";
 
 export function CabinetForm() {
   const { user, supabase } = useAuth();
+  const { role, setRole } = useRole();
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("");
@@ -152,6 +154,23 @@ export function CabinetForm() {
             </select>
             <p className="text-xs text-muted-foreground mt-1">
               This will change currency symbols throughout the app.
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="role">Business type</Label>
+            <select
+              id="role"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              value={role}
+              onChange={(e) => setRole(e.target.value as RoleType)}
+            >
+              <option value="tutor">Tutoring (students & lessons)</option>
+              <option value="business">Business (clients & services)</option>
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              This will change terminology throughout the app to match your
+              business type.
             </p>
           </div>
 

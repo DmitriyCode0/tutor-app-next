@@ -8,6 +8,7 @@ import { Edit2, Trash2 } from "lucide-react";
 import { Lesson } from "@/lib/types/lesson";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole } from "@/lib/providers/role-provider";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
 import { EditLessonDialog } from "@/components/EditLessonDialog";
 import {
@@ -43,6 +44,7 @@ export function LessonCard({
   compact = false,
   className = "",
 }: LessonCardProps) {
+  const { t } = useRole();
   const { user } = useAuth();
   const [currency, setCurrency] = useState<string>("UAH");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -126,9 +128,9 @@ export function LessonCard({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
+            <AlertDialogTitle>Delete {t.Lesson}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the lesson for{" "}
+              Are you sure you want to delete the {t.lesson} for{" "}
               {lesson.studentName} on {formatDisplayDate(lesson.date)}? This
               action cannot be undone.
             </AlertDialogDescription>

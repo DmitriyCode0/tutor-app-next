@@ -9,8 +9,10 @@ import { StudentList } from "@/components/StudentList";
 import { useStudents } from "@/lib/hooks/useStudents";
 import { Student } from "@/lib/types/student";
 import { ProtectedPage } from "@/components/ProtectedPage";
+import { useRole } from "@/lib/providers/role-provider";
 
 export default function StudentsPage() {
+  const { t } = useRole();
   const { students, loading, error, addStudent, updateStudent, deleteStudent } =
     useStudents();
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -47,7 +49,7 @@ export default function StudentsPage() {
         <main className="container mx-auto p-4 md:p-10">
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">Loading students...</p>
+              <p className="text-muted-foreground">Loading {t.students}...</p>
             </CardContent>
           </Card>
         </main>
@@ -59,7 +61,7 @@ export default function StudentsPage() {
     <ProtectedPage>
       <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
-          <h1 className="text-3xl font-bold font-architects">Students</h1>
+          <h1 className="text-3xl font-bold font-architects">{t.Students}</h1>
           <div className="flex items-center gap-2"></div>
         </div>
 
@@ -73,7 +75,9 @@ export default function StudentsPage() {
           onSubmit={handleSubmit}
           onCancel={editingStudent ? handleCancelEdit : undefined}
           initialData={editingStudent || undefined}
-          submitLabel={editingStudent ? "Update Student" : "Add Student"}
+          submitLabel={
+            editingStudent ? `Update ${t.Student}` : `Add ${t.Student}`
+          }
         />
 
         <Separator className="my-10" />

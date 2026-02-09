@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole } from "@/lib/providers/role-provider";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils/currency";
 
 import { Lesson } from "@/lib/types/lesson";
@@ -35,6 +36,7 @@ export function LessonList({
   onEdit,
   onUpdate,
 }: LessonListProps) {
+  const { t } = useRole();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   // currency preference: read from auth metadata or localStorage
@@ -83,7 +85,9 @@ export function LessonList({
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          <p>No lessons yet. Add your first lesson above!</p>
+          <p>
+            No {t.lessons} yet. Add your first {t.lesson} above!
+          </p>
         </CardContent>
       </Card>
     );
@@ -104,7 +108,7 @@ export function LessonList({
     <Card className="transition-shadow hover:shadow-md">
       <CardHeader className="pb-6">
         <CardTitle className="flex items-center gap-3 text-xl">
-          Lessons
+          {t.Lessons}
           <Badge variant="outline" className="text-sm font-medium px-3 py-1">
             {lessons.length}
           </Badge>

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lesson } from "@/lib/types/lesson";
+import { useRole } from "@/lib/providers/role-provider";
 
 type EditLessonDialogProps = {
   open: boolean;
@@ -30,6 +31,7 @@ export function EditLessonDialog({
   lesson,
   onSave,
 }: EditLessonDialogProps) {
+  const { t } = useRole();
   const [date, setDate] = React.useState<string>("");
   const [hourlyRate, setHourlyRate] = React.useState<string>("");
   const [saving, setSaving] = React.useState(false);
@@ -62,8 +64,8 @@ export function EditLessonDialog({
       await onSave(lesson.id, { date, hourlyRate: rate });
       onOpenChange(false);
     } catch (err) {
-      console.error("Failed to update lesson:", err);
-      alert("Failed to update lesson. Please try again.");
+      console.error(`Failed to update ${t.lesson}:`, err);
+      alert(`Failed to update ${t.lesson}. Please try again.`);
     } finally {
       setSaving(false);
     }
@@ -73,7 +75,7 @@ export function EditLessonDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Lesson</DialogTitle>
+          <DialogTitle>Edit {t.Lesson}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-2">

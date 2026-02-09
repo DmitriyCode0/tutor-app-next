@@ -13,8 +13,10 @@ import { Lesson } from "@/lib/types/lesson";
 import { formatDateString, formatDisplayDate } from "@/lib/utils/dateUtils";
 
 import { ProtectedPage } from "@/components/ProtectedPage";
+import { useRole } from "@/lib/providers/role-provider";
 
 export default function Home() {
+  const { t } = useRole();
   const { lessons, loading, error, addLesson, updateLesson, deleteLesson } =
     useLessons();
 
@@ -126,7 +128,7 @@ export default function Home() {
   return (
     <ProtectedPage>
       <main className="container mx-auto px-4 py-6 md:px-8 md:py-8 max-w-7xl">
-        <LessonForm onSubmit={handleSubmit} submitLabel="Add Lesson" />
+        <LessonForm onSubmit={handleSubmit} submitLabel={`Add ${t.Lesson}`} />
 
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -140,12 +142,12 @@ export default function Home() {
 
         <Separator className="my-10" />
 
-        <h2 className="text-lg font-medium mb-4">Today&apos;s lessons</h2>
+        <h2 className="text-lg font-medium mb-4">Today&apos;s {t.lessons}</h2>
 
         {todaysLessons.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">No lessons for today.</p>
+              <p className="text-muted-foreground">No {t.lessons} for today.</p>
             </CardContent>
           </Card>
         ) : (

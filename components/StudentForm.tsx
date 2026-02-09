@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Student } from "@/lib/types/student";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole } from "@/lib/providers/role-provider";
 import { useEffect } from "react";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 
@@ -34,6 +35,7 @@ export function StudentForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { t } = useRole();
   const [currency, setCurrency] = useState<string>("UAH");
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function StudentForm({
 
     // Validation
     if (!name.trim()) {
-      setError("Student name is required");
+      setError(`${t.Student} name is required`);
       return;
     }
 
@@ -85,7 +87,7 @@ export function StudentForm({
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to save student";
+        err instanceof Error ? err.message : `Failed to save ${t.student}`;
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -96,7 +98,7 @@ export function StudentForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          {initialData ? "Edit Student" : "Add New Student"}
+          {initialData ? `Edit ${t.Student}` : `Add New ${t.Student}`}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
@@ -112,12 +114,12 @@ export function StudentForm({
               htmlFor="name"
               className="text-sm font-semibold text-foreground"
             >
-              Student Name <span className="text-destructive">*</span>
+              {t.Student} Name <span className="text-destructive">*</span>
             </label>
             <Input
               id="name"
               type="text"
-              placeholder="Enter student name"
+              placeholder={`Enter ${t.student} name`}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -157,7 +159,7 @@ export function StudentForm({
               <Input
                 id="email"
                 type="email"
-                placeholder="student@example.com"
+                placeholder={`${t.student}@example.com`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-11"
@@ -192,7 +194,7 @@ export function StudentForm({
             <textarea
               id="notes"
               className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-4 py-3 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-              placeholder="Additional notes about the student..."
+              placeholder={`Additional notes about the ${t.student}...`}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}

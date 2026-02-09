@@ -15,6 +15,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Student } from "@/lib/types/student";
+import { useRole } from "@/lib/providers/role-provider";
 
 interface StudentListProps {
   students: Student[];
@@ -23,6 +24,7 @@ interface StudentListProps {
 }
 
 export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
+  const { t } = useRole();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
@@ -60,7 +62,9 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          <p>No students yet. Add your first student above!</p>
+          <p>
+            No {t.students} yet. Add your first {t.student} above!
+          </p>
         </CardContent>
       </Card>
     );
@@ -76,13 +80,13 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
       <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl">
-            Students ({students.length})
+            {t.Students} ({students.length})
           </CardTitle>
           {students.length > 0 && (
             <div className="w-64">
               <Input
                 type="text"
-                placeholder="Search students..."
+                placeholder={`Search ${t.students}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-10"
@@ -94,7 +98,9 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
       <CardContent className="pt-0">
         {filteredStudents.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">
-            <p>No students found matching "{searchQuery}"</p>
+            <p>
+              No {t.students} found matching "{searchQuery}"
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -157,10 +163,10 @@ export function StudentList({ students, onDelete, onEdit }: StudentListProps) {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Student</AlertDialogTitle>
+              <AlertDialogTitle>Delete {t.Student}</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to delete {deleteTarget?.name}? This will
-                remove all lessons tied to this student.
+                remove all {t.lessons} tied to this {t.student}.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

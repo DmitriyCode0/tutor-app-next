@@ -8,6 +8,7 @@ import { Lesson } from "@/lib/types/lesson";
 import { StudentAutocomplete } from "@/components/StudentAutocomplete";
 import { Student } from "@/lib/types/student";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole } from "@/lib/providers/role-provider";
 import { useEffect } from "react";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 
@@ -45,6 +46,7 @@ export function LessonForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { t } = useRole();
   const [currency, setCurrency] = useState<string>("UAH");
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export function LessonForm({
 
     // Validation
     if (!studentName.trim()) {
-      setError("Student name is required");
+      setError(`${t.Student} name is required`);
       return;
     }
 
@@ -107,7 +109,7 @@ export function LessonForm({
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to save lesson";
+        err instanceof Error ? err.message : `Failed to save ${t.lesson}`;
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -117,7 +119,9 @@ export function LessonForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? "Edit Lesson" : "Add New Lesson"}</CardTitle>
+        <CardTitle>
+          {initialData ? `Edit ${t.Lesson}` : `Add New ${t.Lesson}`}
+        </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -132,7 +136,7 @@ export function LessonForm({
               htmlFor="studentName"
               className="text-sm font-semibold text-foreground"
             >
-              Student Name
+              {t.Student} Name
             </label>
             <StudentAutocomplete
               value={studentName}
@@ -147,7 +151,7 @@ export function LessonForm({
                 // Auto-fill hourly rate when student is selected
                 setHourlyRate(student.hourlyRate.toString());
               }}
-              placeholder="Enter student name"
+              placeholder={`Enter ${t.student} name`}
             />
           </div>
 

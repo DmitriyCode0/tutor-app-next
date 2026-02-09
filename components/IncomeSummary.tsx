@@ -17,6 +17,7 @@ import {
 } from "@/lib/utils/incomeUtils";
 import { formatDateRange } from "@/lib/utils/dateUtils";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { useRole } from "@/lib/providers/role-provider";
 import {
   formatCurrency as formatCurrencyUtil,
   getCurrencySymbol,
@@ -29,6 +30,7 @@ interface IncomeSummaryProps {
 const MONTHLY_GOAL_KEY = "tutor_monthly_goal";
 
 export function IncomeSummary({ lessons }: IncomeSummaryProps) {
+  const { t } = useRole();
   const [monthlyGoal, setMonthlyGoal] = useState<number>(2000);
   const [goalInput, setGoalInput] = useState<string>("2000");
   const [weekOffset, setWeekOffset] = useState<number>(0);
@@ -160,8 +162,8 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
               </Button>
             </div>
             <Badge variant="secondary" className="text-xs font-medium">
-              {getWeekLessonCount(weekOffset)} lesson
-              {getWeekLessonCount(weekOffset) !== 1 ? "s" : ""}
+              {getWeekLessonCount(weekOffset)}{" "}
+              {getWeekLessonCount(weekOffset) !== 1 ? t.lessons : t.lesson}
             </Badge>
           </div>
         </CardHeader>
@@ -183,8 +185,10 @@ export function IncomeSummary({ lessons }: IncomeSummaryProps) {
               This Month
             </CardTitle>
             <Badge variant="outline" className="text-xs font-medium">
-              {currentMonthData?.lessonCount || 0} lesson
-              {(currentMonthData?.lessonCount || 0) !== 1 ? "s" : ""}
+              {currentMonthData?.lessonCount || 0}{" "}
+              {(currentMonthData?.lessonCount || 0) !== 1
+                ? t.lessons
+                : t.lesson}
             </Badge>
           </div>
         </CardHeader>
